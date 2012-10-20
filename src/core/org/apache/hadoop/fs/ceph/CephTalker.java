@@ -20,72 +20,199 @@
  */
 package org.apache.hadoop.fs.ceph;
 
+import java.io.IOException;
+import java.net.URI;
+import java.io.FileNotFoundException;
+import java.util.Arrays;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.commons.logging.Log;
+import org.apache.commons.lang.StringUtils;
 
+import com.ceph.fs.CephMount;
+import com.ceph.fs.CephStat;
+import com.ceph.fs.CephFileAlreadyExistsException;
 
 class CephTalker extends CephFS {
-  // JNI doesn't give us any way to store pointers, so use a long.
-  // Here we're assuming pointers aren't longer than 8 bytes.
-  long cluster;
 
-  // we write a constructor so we can load the libraries
+  private CephMount mount;
+
   public CephTalker(Configuration conf, Log log) {
-    System.load(conf.get("fs.ceph.libDir") + "/libcephfs.so");
-    System.load(conf.get("fs.ceph.libDir") + "/libhadoopcephfs.so");
-    cluster = 0;
+    mount = null;
   }
 
-  protected native boolean ceph_initializeClient(String arguments, int block_size);
+  protected boolean ceph_initializeClient(URI uri, Configuration conf,
+          String arguments, int block_size) throws IOException {
+    mount = new CephMount("admin");
 
-  protected native String ceph_getcwd();
+    /*
+     * Load a configuration file if specified
+     */
+    String configfile = conf.get("fs.ceph.conf.file", null);
+    if (configfile != null) {
+      mount.conf_read_file(configfile);
+    }
 
-  protected native boolean ceph_setcwd(String path);
+    /* Passing root = null to mount() will default to "/" */
+    String root = StringUtils.stripToNull(uri.getPath());
+    mount.mount(root);
 
-  protected native boolean ceph_rmdir(String path);
+    return true;
+  }
 
-  protected native boolean ceph_unlink(String path);
+  protected String ceph_getcwd() throws IOException {
+    return mount.getcwd();
+  }
 
-  protected native boolean ceph_rename(String old_path, String new_path);
+  protected boolean ceph_setcwd(String path) throws IOException {
+    mount.chdir(path);
+    return true;
+  }
 
-  protected native boolean ceph_exists(String path);
+  protected boolean ceph_rmdir(String path) throws IOException {
+    mount.rmdir(path);
+    return true;
+  }
 
-  protected native long ceph_getblocksize(String path);
+  protected boolean ceph_unlink(String path) throws IOException {
+    mount.unlink(path);
+    return true;
+  }
 
-  protected native boolean ceph_isdirectory(String path);
+  protected boolean ceph_rename(String old_path, String new_path) throws IOException {
+    mount.rename(old_path, new_path);
+    return true;
+  }
 
-  protected native boolean ceph_isfile(String path);
+  protected boolean ceph_exists(String path) throws IOException {
+    CephStat stat = new CephStat();
+    try {
+      mount.lstat(path, stat);
+      return true;
+    } catch (FileNotFoundException e) {}
+    return false;
+  }
 
-  protected native String[] ceph_getdir(String path);
+  protected long ceph_getblocksize(String path) throws IOException {
+    int fd = mount.open(path, CephMount.O_RDONLY, 0);
+    int block_size = mount.get_file_stripe_unit(fd);
+    mount.close(fd);
+    return (long)block_size;
+  }
 
-  protected native int ceph_mkdirs(String path, int mode);
+  protected boolean ceph_isdirectory(String path) throws IOException {
+    CephStat stat = new CephStat();
+    mount.lstat(path, stat);
+    return stat.is_directory;
+  }
+
+  protected boolean ceph_isfile(String path) throws IOException {
+    CephStat stat = new CephStat();
+    try {
+      mount.lstat(path, stat);
+    } catch (FileNotFoundException e) {
+      return false;
+    }
+    return stat.is_file;
+  }
+
+  protected String[] ceph_getdir(String path) throws IOException {
+    CephStat stat = new CephStat();
+    try {
+      mount.lstat(path, stat);
+    } catch (FileNotFoundException e) {
+      return null;
+    }
+    if (stat.is_file)
+      return null;
+    return mount.listdir(path);
+  }
+
+  protected int ceph_mkdirs(String path, int mode) throws IOException {
+    try {
+      mount.mkdirs(path, mode);
+    } catch (CephFileAlreadyExistsException e) {
+      return 1;
+    }
+    return 0;
+  }
 
   protected native int ceph_open_for_append(String path);
 
-  protected native int ceph_open_for_read(String path);
+  protected int ceph_open_for_read(String path) throws IOException {
+    return mount.open(path, CephMount.O_RDONLY, 0);
+  }
 
-  protected native int ceph_open_for_overwrite(String path, int mode);
+  protected int ceph_open_for_overwrite(String path, int mode) throws IOException {
+    int flags = CephMount.O_WRONLY|CephMount.O_CREAT|CephMount.O_TRUNC;
+    return mount.open(path, flags, mode);
+  }
 
-  protected native int ceph_close(int filehandle);
+  protected int ceph_close(int filehandle) throws IOException {
+    mount.close(filehandle);
+    return 0;
+  }
 
-  protected native boolean ceph_setPermission(String path, int mode);
+  protected boolean ceph_setPermission(String path, int mode) throws IOException {
+    mount.chmod(path, mode);
+    return true;
+  }
 
-  protected native boolean ceph_kill_client();
+  protected boolean ceph_kill_client() throws IOException {
+    mount.unmount();
+    mount = null;
+    return true;
+  }
 
-  protected native boolean ceph_stat(String path, CephFileSystem.Stat fill);
+  protected boolean ceph_stat(String path, CephFileSystem.Stat fill) throws IOException {
+    CephStat stat = new CephStat();
+    try {
+      mount.lstat(path, stat);
+    } catch (FileNotFoundException e) {
+      return false;
+    }
+    fill.size = stat.size;
+    fill.is_dir = stat.is_directory;
+    fill.block_size = stat.blksize;
+    fill.mod_time = stat.m_time;
+    fill.access_time = stat.a_time;
+    fill.mode = stat.mode;
+    return true;
+  }
 
-  protected native int ceph_replication(String Path);
+  protected int ceph_replication(String path) throws IOException {
+    CephStat stat = new CephStat();
+    mount.lstat(path, stat);
+    int replication = 1;
+    if (stat.is_file) {
+      int fd = mount.open(path, 0, CephMount.O_RDONLY);
+      replication = mount.get_file_replication(fd);
+      mount.close(fd);
+    }
+    return replication;
+  }
 
-  protected native String[] ceph_hosts(int fh, long offset);
+  protected String[] ceph_hosts(int fh, long offset) {
+    return new String[] {};
+  }
 
   protected native int ceph_setTimes(String path, long mtime, long atime);
 
-  protected native long ceph_getpos(int fh);
+  protected long ceph_getpos(int fh) throws IOException {
+    return mount.lseek(fh, 0, CephMount.SEEK_CUR);
+  }
 
-  protected native int ceph_write(int fh, byte[] buffer, int buffer_offset, int length);
+  protected int ceph_write(int fh, byte[] buffer, int buffer_offset, int length) throws IOException {
+    assert buffer_offset == 0;
+    return (int)mount.write(fh, buffer, length, -1);
+  }
 
-  protected native int ceph_read(int fh, byte[] buffer, int buffer_offset, int length);
+  protected int ceph_read(int fh, byte[] buffer, int buffer_offset, int length) throws IOException {
+    assert buffer_offset == 0;
+    return (int)mount.read(fh, buffer, length, -1);
+  }
 
-  protected native long ceph_seek_from_start(int fh, long pos);
+  protected long ceph_seek_from_start(int fh, long pos) throws IOException {
+    return mount.lseek(fh, pos, CephMount.SEEK_SET);
+  }
 }

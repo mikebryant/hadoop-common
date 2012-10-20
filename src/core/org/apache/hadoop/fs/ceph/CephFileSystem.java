@@ -45,6 +45,8 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.net.DNS;
 
+import com.ceph.fs.CephFileAlreadyExistsException;
+
 
 /**
  * <p>
@@ -90,6 +92,8 @@ public class CephFileSystem extends FileSystem {
    * Used for testing purposes, this constructor
    * sets the given CephFS instead of defaulting to a
    * CephTalker (with its assumed real Ceph instance to talk to).
+   *
+   * TODO: make package private
    */
   public CephFileSystem(CephFS ceph_fs) {
     super();
@@ -152,7 +156,7 @@ public class CephFileSystem extends FileSystem {
           "You must specify a Ceph monitor address or config file!");
     }
     // Initialize the client
-    if (!ceph.ceph_initializeClient(arguments,
+    if (!ceph.ceph_initializeClient(uri, conf, arguments,
         conf.getInt("fs.ceph.blockSize", 1 << 26))) {
       LOG.fatal("initialize:Ceph initialization failed!");
       throw new IOException("Ceph initialization failed!");
@@ -473,16 +477,15 @@ public class CephFileSystem extends FileSystem {
       Path parent = abs_path.getParent();
 
       if (parent != null) { // if parent is root, we're done
-        int r = ceph.ceph_mkdirs(getCephPath(parent), permission.toShort());
-
-        if (!(r == 0 || r == -ceph.EEXIST)) {
-          throw new IOException("Error creating parent directory; code: " + r);
-        }
+        try {
+          ceph.ceph_mkdirs(getCephPath(parent), permission.toShort());
+        } catch (CephFileAlreadyExistsException e) {}
       }
       if (progress != null) {
         progress.progress();
       }
     }
+
     // Step 3: open the file
     LOG.trace("calling ceph_open_for_overwrite from Java");
     int fh = ceph.ceph_open_for_overwrite(getCephPath(abs_path),

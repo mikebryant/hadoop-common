@@ -57,7 +57,8 @@ class CephFaker extends CephFS {
     filenames = new Hashtable<Integer, String>();
   }
 	
-  protected boolean ceph_initializeClient(String args, int block_size) {
+  protected boolean ceph_initializeClient(URI uri, Configuration conf,
+          String args, int block_size) {
     if (!initialized) {
       // let's remember the default block_size
       blockSize = block_size;

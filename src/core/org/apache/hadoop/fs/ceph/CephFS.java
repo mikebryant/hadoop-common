@@ -22,6 +22,9 @@
  */
 package org.apache.hadoop.fs.ceph;
 
+import java.io.IOException;
+import java.net.URI;
+
 import org.apache.hadoop.conf.Configuration;
 
 abstract class CephFS {
@@ -37,12 +40,13 @@ abstract class CephFS {
    *  int block_size -- the size in bytes to use for blocks
    * Returns: true on success, false otherwise
    */
-  abstract protected boolean ceph_initializeClient(String arguments, int block_size);
+  abstract protected boolean ceph_initializeClient(URI uri, Configuration conf,
+          String arguments, int block_size) throws IOException;
 	
   /*
    * Returns the current working directory (absolute) as a String
    */
-  abstract protected String ceph_getcwd();
+  abstract protected String ceph_getcwd() throws IOException;
 
   /*
    * Changes the working directory.
@@ -50,7 +54,7 @@ abstract class CephFS {
    *  String path: The path (relative or absolute) to switch to
    * Returns: true on success, false otherwise.
    */
-  abstract protected boolean ceph_setcwd(String path);
+  abstract protected boolean ceph_setcwd(String path) throws IOException;
 
   /*
    * Given a path to a directory, removes the directory if empty.
@@ -58,7 +62,7 @@ abstract class CephFS {
    *  jstring j_path: The path (relative or absolute) to the directory
    * Returns: true on successful delete; false otherwise
    */
-  abstract protected boolean ceph_rmdir(String path);
+  abstract protected boolean ceph_rmdir(String path) throws IOException;
 
   /*
    * Given a path, unlinks it.
@@ -66,7 +70,7 @@ abstract class CephFS {
    *  String path: The path (relative or absolute) to the file or empty dir
    * Returns: true if the unlink occurred, false otherwise.
    */
-  abstract protected boolean ceph_unlink(String path);
+  abstract protected boolean ceph_unlink(String path) throws IOException;
 
   /*
    * Changes a given path name to a new name, assuming new_path doesn't exist.
@@ -75,13 +79,13 @@ abstract class CephFS {
    *  jstring j_to: The new name for the path.
    * Returns: true if the rename occurred, false otherwise
    */
-  abstract protected boolean ceph_rename(String old_path, String new_path);
+  abstract protected boolean ceph_rename(String old_path, String new_path) throws IOException;
 
   /*
    * Returns true if it the input path exists, false
    * if it does not or there is an unexpected failure.
    */
-  abstract protected boolean ceph_exists(String path);
+  abstract protected boolean ceph_exists(String path) throws IOException;
 
   /*
    * Get the block size for a given path.
@@ -91,17 +95,17 @@ abstract class CephFS {
    * Returns: block size if the path exists, otherwise a negative number
    *  corresponding to the standard C++ error codes (which are positive).
    */
-  abstract protected long ceph_getblocksize(String path);
+  abstract protected long ceph_getblocksize(String path) throws IOException;
 
   /*
    * Returns true if the given path is a directory, false otherwise.
    */
-  abstract protected boolean ceph_isdirectory(String path);
+  abstract protected boolean ceph_isdirectory(String path) throws IOException;
 
   /*
    * Returns true if the given path is a file; false otherwise.
    */
-  abstract protected boolean ceph_isfile(String path);
+  abstract protected boolean ceph_isfile(String path) throws IOException;
 
   /*
    * Get the contents of a given directory.
@@ -111,13 +115,13 @@ abstract class CephFS {
    *  NULL if there is an error (ie, path is not a dir). This listing
    *  will not contain . or .. entries.
    */
-  abstract protected String[] ceph_getdir(String path);
+  abstract protected String[] ceph_getdir(String path) throws IOException;
 
   /*
    * Create the specified directory and any required intermediate ones with the
    * given mode.
    */
-  abstract protected int ceph_mkdirs(String path, int mode);
+  abstract protected int ceph_mkdirs(String path, int mode) throws IOException;
 
   /*
    * Open a file to append. If the file does not exist, it will be created.
@@ -135,7 +139,7 @@ abstract class CephFS {
    *  String path: The path to open.
    * Returns: an int filehandle, or a number<0 if an error occurs.
    */
-  abstract protected int ceph_open_for_read(String path);
+  abstract protected int ceph_open_for_read(String path) throws IOException;
 
   /*
    * Opens a file for overwriting; creates it if necessary.
@@ -145,13 +149,13 @@ abstract class CephFS {
    *  int mode: The mode to open with.
    * Returns: an int filehandle, or a number<0 if an error occurs.
    */
-  abstract protected int ceph_open_for_overwrite(String path, int mode);
+  abstract protected int ceph_open_for_overwrite(String path, int mode) throws IOException;
 
   /*
    * Closes the given file. Returns 0 on success, or a negative
    * error code otherwise.
    */
-  abstract protected int ceph_close(int filehandle);
+  abstract protected int ceph_close(int filehandle) throws IOException;
 
   /*
    * Change the mode on a path.
@@ -161,13 +165,13 @@ abstract class CephFS {
    * Returns: true if the mode is properly applied, false if there
    *  is any error.
    */
-  abstract protected boolean ceph_setPermission(String path, int mode);
+  abstract protected boolean ceph_setPermission(String path, int mode) throws IOException;
 
   /*
    * Closes the Ceph client. This should be called before shutting down
    * (multiple times is okay but redundant).
    */
-  abstract protected boolean ceph_kill_client();
+  abstract protected boolean ceph_kill_client() throws IOException;
 
   /*
    * Get the statistics on a path returned in a custom format defined
@@ -177,7 +181,7 @@ abstract class CephFS {
    *  Stat fill: The stat object to fill.
    * Returns: true if the stat is successful, false otherwise.
    */
-  abstract protected boolean ceph_stat(String path, CephFileSystem.Stat fill);
+  abstract protected boolean ceph_stat(String path, CephFileSystem.Stat fill) throws IOException;
 
   /*
    * Check how many times a file should be replicated. If it is,
@@ -186,7 +190,7 @@ abstract class CephFS {
    *  int fh: a file descriptor
    * Returns: an int containing the number of times replicated.
    */
-  abstract protected int ceph_replication(String path);
+  abstract protected int ceph_replication(String path) throws IOException;
 
   /*
    * Find the IP address of the primary OSD for a given file and offset.
@@ -212,7 +216,7 @@ abstract class CephFS {
    * Returns: (long) current file position on success, or a
    *  negative error code on failure.
    */
-  abstract protected long ceph_getpos(int fh);
+  abstract protected long ceph_getpos(int fh) throws IOException;
 
   /*
    * Write the given buffer contents to the given filehandle.
@@ -224,7 +228,7 @@ abstract class CephFS {
    * Returns: int, on success the number of bytes written, on failure
    *  a negative error code.
    */
-  abstract protected int ceph_write(int fh, byte[] buffer, int buffer_offset, int length);
+  abstract protected int ceph_write(int fh, byte[] buffer, int buffer_offset, int length) throws IOException;
 
   /*
    * Reads into the given byte array from the current position.
@@ -237,7 +241,7 @@ abstract class CephFS {
    * the data from the given offset!
    * Returns: the number of bytes read on success (as an int),
    *  or an error code otherwise.	 */
-  abstract protected int ceph_read(int fh, byte[] buffer, int buffer_offset, int length);
+  abstract protected int ceph_read(int fh, byte[] buffer, int buffer_offset, int length) throws IOException;
 
   /*
    * Seeks to the given position in the given file.
@@ -246,5 +250,5 @@ abstract class CephFS {
    *  long pos: The position to seek to.
    * Returns: the new position (as a long) of the filehandle on success,
    *  or a negative error code on failure.	 */
-  abstract protected long ceph_seek_from_start(int fh, long pos);
+  abstract protected long ceph_seek_from_start(int fh, long pos) throws IOException;
 }
