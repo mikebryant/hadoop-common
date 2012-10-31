@@ -54,6 +54,7 @@
 **/TestRPC.java
 **/TestS3Credentials.java
 **/TestS3FileSystem.java
+**/TestCeph.java
 **/TestSaslRPC.java
 **/TestScriptBasedMapping.java
 **/TestSequenceFileSerialization.java
