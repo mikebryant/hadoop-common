@@ -39,6 +39,7 @@ abstract class CephFS {
   abstract void initialize(URI uri, Configuration conf) throws IOException;
   abstract int open(Path path, int flags, int mode) throws IOException;
   abstract void fstat(int fd, CephStat stat) throws IOException;
+  abstract void lstat(Path path, CephStat stat) throws IOException;
   abstract void unlink(Path path) throws IOException;
   abstract void rmdir(Path path) throws IOException;
   abstract String[] listdir(Path path) throws IOException;
@@ -121,16 +122,6 @@ abstract class CephFS {
    * (multiple times is okay but redundant).
    */
   abstract protected boolean ceph_kill_client() throws IOException;
-
-  /*
-   * Get the statistics on a path returned in a custom format defined
-   * in CephFileSystem.
-   * Inputs:
-   *  String path: The path to stat.
-   *  Stat fill: The stat object to fill.
-   * Returns: true if the stat is successful, false otherwise.
-   */
-  abstract protected boolean ceph_stat(String path, CephFileSystem.Stat fill) throws IOException;
 
   /*
    * Check how many times a file should be replicated. If it is,

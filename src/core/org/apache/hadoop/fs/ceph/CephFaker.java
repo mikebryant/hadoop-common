@@ -251,35 +251,24 @@ class CephFaker extends CephFS {
     return true;
   }
 
-  void fstat(int fd, CephStat stat) throws IOException {
-    String path = filenames.get(new Integer(fd));
-    CephFileSystem.Stat fill = new CephFileSystem.Stat();
-    ceph_stat(path, fill);
-    stat.size = fill.size;
-    stat.is_directory = fill.is_dir;
-    stat.blksize = fill.block_size;
-    stat.m_time = fill.mod_time;
-    stat.a_time = fill.access_time;
-    stat.mode = fill.mode;
+  private void stat(String path, CephStat fill) throws IOException {
+    FileStatus status = localFS.getFileStatus(new Path(path));
+    fill.size = status.getLen();
+    fill.is_directory = status.isDir();
+    fill.blksize = status.getBlockSize();
+    fill.m_time = status.getModificationTime();
+    fill.a_time = status.getAccessTime();
+    fill.mode = status.getPermission().toShort();
   }
 
-  protected boolean ceph_stat(String pth, CephFileSystem.Stat fill) {
-    pth = prepare_path(pth);
-    Path path = new Path(pth);
-    boolean ret = false;
+  void fstat(int fd, CephStat stat) throws IOException {
+    String path = filenames.get(new Integer(fd));
+    stat(path, stat);
+  }
 
-    try {
-      FileStatus status = localFS.getFileStatus(path);
-
-      fill.size = status.getLen();
-      fill.is_dir = status.isDir();
-      fill.block_size = status.getBlockSize();
-      fill.mod_time = status.getModificationTime();
-      fill.access_time = status.getAccessTime();
-      fill.mode = status.getPermission().toShort();
-      ret = true;
-    } catch (IOException e) {}
-    return ret;
+  void lstat(Path pth, CephStat fill) throws IOException {
+    String path = prepare_path(pth.toUri().getPath());
+    stat(path, fill);
   }
 
   protected int ceph_replication(Path pth) {

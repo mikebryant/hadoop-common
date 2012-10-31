@@ -105,6 +105,10 @@ class CephTalker extends CephFS {
     mount.fstat(fd, stat);
   }
 
+  void lstat(Path path, CephStat stat) throws IOException {
+    mount.lstat(pathString(path), stat);
+  }
+
   protected String ceph_getcwd() throws IOException {
     return mount.getcwd();
   }
@@ -175,22 +179,6 @@ class CephTalker extends CephFS {
   protected boolean ceph_kill_client() throws IOException {
     mount.unmount();
     mount = null;
-    return true;
-  }
-
-  protected boolean ceph_stat(String path, CephFileSystem.Stat fill) throws IOException {
-    CephStat stat = new CephStat();
-    try {
-      mount.lstat(path, stat);
-    } catch (FileNotFoundException e) {
-      return false;
-    }
-    fill.size = stat.size;
-    fill.is_dir = stat.is_directory;
-    fill.block_size = stat.blksize;
-    fill.mod_time = stat.m_time;
-    fill.access_time = stat.a_time;
-    fill.mode = stat.mode;
     return true;
   }
 

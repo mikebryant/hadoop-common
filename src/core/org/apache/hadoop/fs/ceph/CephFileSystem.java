@@ -252,27 +252,16 @@ public class CephFileSystem extends FileSystem {
    * @throws FileNotFoundException if the path could not be resolved.
    */
   public FileStatus getFileStatus(Path path) throws IOException {
-    LOG.debug("getFileStatus:enter with path " + path);
-    Path abs_path = makeAbsolute(path);
-    // sadly, Ceph doesn't really do uids/gids just yet, but
-    // everything else is filled
-    FileStatus status;
-    Stat lstat = new Stat();
+    path = makeAbsolute(path);
 
-    LOG.trace("getFileStatus: calling ceph_stat from Java");
-    if (ceph.ceph_stat(getCephPath(abs_path), lstat)) {
-      status = new FileStatus(lstat.size, lstat.is_dir,
-          ceph.ceph_replication(abs_path), lstat.block_size,
-          lstat.mod_time, lstat.access_time,
-          new FsPermission((short) lstat.mode), System.getProperty("user.name"), null,
-          path.makeQualified(this));
-    } else { // fail out
-      throw new FileNotFoundException(
-          "org.apache.hadoop.fs.ceph.CephFileSystem: File " + path
-          + " does not exist or could not be accessed");
-    }
+    CephStat stat = new CephStat();
+    ceph.lstat(path, stat);
 
-    LOG.debug("getFileStatus:exit");
+    FileStatus status = new FileStatus(stat.size, stat.is_directory,
+          ceph.ceph_replication(path), stat.blksize, stat.m_time,
+          stat.a_time, new FsPermission((short) stat.mode),
+          System.getProperty("user.name"), null, path.makeQualified(this));
+
     return status;
   }
 
@@ -572,14 +561,4 @@ public class CephFileSystem extends FileSystem {
     return new Path(workingDir, path);
   }
 
-  static class Stat {
-    public long size;
-    public boolean is_dir;
-    public long block_size;
-    public long mod_time;
-    public long access_time;
-    public int mode;
-
-    public Stat() {}
-  }
 }
