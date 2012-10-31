@@ -43,6 +43,8 @@ abstract class CephFS {
   abstract void unlink(Path path) throws IOException;
   abstract void rmdir(Path path) throws IOException;
   abstract String[] listdir(Path path) throws IOException;
+  abstract void setattr(Path path, CephStat stat, int mask) throws IOException;
+  abstract void chmod(Path path, int mode) throws IOException;
 
   /*
    * Returns the current working directory (absolute) as a String
@@ -108,16 +110,6 @@ abstract class CephFS {
   abstract protected int ceph_close(int filehandle) throws IOException;
 
   /*
-   * Change the mode on a path.
-   * Inputs:
-   *  String path: The path to change mode on.
-   *  int mode: The mode to apply.
-   * Returns: true if the mode is properly applied, false if there
-   *  is any error.
-   */
-  abstract protected boolean ceph_setPermission(String path, int mode) throws IOException;
-
-  /*
    * Closes the Ceph client. This should be called before shutting down
    * (multiple times is okay but redundant).
    */
@@ -140,16 +132,6 @@ abstract class CephFS {
    * Returns: an array of String of the location as IP, or NULL if there is an error.
    */
   abstract protected String[] ceph_hosts(int fh, long offset);
-
-  /*
-   * Set the mtime and atime for a given path.
-   * Inputs:
-   *  String path: The path to set the times for.
-   *  long mtime: The mtime to set, in millis since epoch (-1 to not set).
-   *  long atime: The atime to set, in millis since epoch (-1 to not set)
-   * Returns: 0 if successful, an error code otherwise.
-   */
-  abstract protected int ceph_setTimes(String path, long mtime, long atime);
 
   /*
    * Get the current position in a file (as a long) of a given filehandle.

@@ -289,38 +289,32 @@ public class CephFileSystem extends FileSystem {
     return null;
   }
 
+  /** {@inheritDocs} */
   @Override
-  public void setPermission(Path p, FsPermission permission) throws IOException {
-    LOG.debug(
-        "setPermission:enter with path " + p + " and permissions " + permission);
-    Path abs_path = makeAbsolute(p);
-
-    LOG.trace("setPermission:calling ceph_setpermission from Java");
-    ceph.ceph_setPermission(getCephPath(abs_path), permission.toShort());
-    LOG.debug("setPermission:exit");
+  public void setPermission(Path path, FsPermission permission) throws IOException {
+    path = makeAbsolute(path);
+    ceph.chmod(path, permission.toShort());
   }
 
-  /**
-   * Set access/modification times of a file.
-   * @param p The path
-   * @param mtime Set modification time in number of millis since Jan 1, 1970.
-   * @param atime Set access time in number of millis since Jan 1, 1970.
-   */
+  /** {@inheritDocs} */
   @Override
-  public void setTimes(Path p, long mtime, long atime) throws IOException {
-    LOG.debug(
-        "setTimes:enter with path " + p + " mtime:" + mtime + " atime:" + atime);
-    Path abs_path = makeAbsolute(p);
+  public void setTimes(Path path, long mtime, long atime) throws IOException {
+    path = makeAbsolute(path);
 
-    LOG.trace("setTimes:calling ceph_setTimes from Java");
-    int r = ceph.ceph_setTimes(getCephPath(abs_path), mtime, atime);
+    CephStat stat = new CephStat();
+    int mask = 0;
 
-    if (r < 0) {
-      throw new IOException(
-          "Failed to set times on path " + abs_path.toString() + " Error code: "
-          + r);
+    if (mtime != -1) {
+      mask |= CephMount.SETATTR_MTIME;
+      stat.m_time = mtime;
     }
-    LOG.debug("setTimes:exit");
+
+    if (atime != -1) {
+      mask |= CephMount.SETATTR_ATIME;
+      stat.a_time = atime;
+    }
+
+    ceph.setattr(path, stat, mask);
   }
 
   /**

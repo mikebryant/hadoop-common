@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 
+import com.ceph.fs.CephMount;
 import com.ceph.fs.CephStat;
 
 class CephFaker extends CephFS {
@@ -224,16 +225,9 @@ class CephFaker extends CephFS {
     return -1; // failure
   }
 
-  protected boolean ceph_setPermission(String pth, int mode) {
-    pth = prepare_path(pth);
-    Path path = new Path(pth);
-    boolean ret = false;
-
-    try {
-      localFS.setPermission(path, new FsPermission((short) mode));
-      ret = true;
-    } catch (IOException e) {}
-    return ret;
+  void chmod(Path pth, int mode) throws IOException {
+    String path = prepare_path(pth.toUri().getPath());
+    localFS.setPermission(new Path(path), new FsPermission((short) mode));
   }
 
   // rather than try and match a Ceph deployment's behavior exactly,
@@ -294,16 +288,17 @@ class CephFaker extends CephFS {
     return ret;
   }
 
-  protected int ceph_setTimes(String pth, long mtime, long atime) {
-    pth = prepare_path(pth);
-    Path path = new Path(pth);
-    int ret = -1; // generic fail
-
-    try {
-      localFS.setTimes(path, mtime, atime);
-      ret = 0;
-    } catch (IOException e) {}
-    return ret;
+  void setattr(Path pth, CephStat stat, int mask) throws IOException {
+    String path = prepare_path(pth.toUri().getPath());
+    long mtime = -1;
+    long atime = -1;
+    if ((mask & CephMount.SETATTR_MTIME) != 0) {
+      mtime = stat.m_time;
+    }
+    if ((mask & CephMount.SETATTR_ATIME) != 0) {
+      atime = stat.a_time;
+    }
+    localFS.setTimes(new Path(path), mtime, atime);
   }
 
   protected long ceph_getpos(int fh) {

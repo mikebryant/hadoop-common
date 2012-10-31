@@ -171,9 +171,8 @@ class CephTalker extends CephFS {
     return 0;
   }
 
-  protected boolean ceph_setPermission(String path, int mode) throws IOException {
-    mount.chmod(path, mode);
-    return true;
+  void chmod(Path path, int mode) throws IOException {
+    mount.chmod(pathString(path), mode);
   }
 
   protected boolean ceph_kill_client() throws IOException {
@@ -198,7 +197,9 @@ class CephTalker extends CephFS {
     return new String[] {};
   }
 
-  protected native int ceph_setTimes(String path, long mtime, long atime);
+  void setattr(Path path, CephStat stat, int mask) throws IOException {
+    mount.setattr(pathString(path), stat, mask);
+  }
 
   protected long ceph_getpos(int fh) throws IOException {
     return mount.lseek(fh, 0, CephMount.SEEK_CUR);
