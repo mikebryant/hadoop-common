@@ -53,6 +53,27 @@ class CephTalker extends CephFS {
       mount.conf_read_file(configfile);
     }
 
+    /*
+     * Parse and set Ceph configuration options
+     */
+    String configopts = conf.get("fs.ceph.conf.options", null);
+    if (configopts != null) {
+      String[] options = configopts.split(",");
+      for (String option : options) {
+          String[] keyval = option.split("=");
+          if (keyval.length != 2) {
+              throw new IllegalArgumentException("Invalid Ceph option: " + option);
+          }
+          String key = keyval[0];
+          String val = keyval[1];
+          try {
+            mount.conf_set(key, val);
+          } catch (Exception e) {
+            throw new IOException("Error setting Ceph option " + key + " = " + val);
+          }
+      }
+    }
+
     /* Passing root = null to mount() will default to "/" */
     String root = StringUtils.stripToNull(uri.getPath());
     mount.mount(root);
