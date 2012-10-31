@@ -262,7 +262,7 @@ public class CephFileSystem extends FileSystem {
     LOG.trace("getFileStatus: calling ceph_stat from Java");
     if (ceph.ceph_stat(getCephPath(abs_path), lstat)) {
       status = new FileStatus(lstat.size, lstat.is_dir,
-          ceph.ceph_replication(getCephPath(abs_path)), lstat.block_size,
+          ceph.ceph_replication(abs_path), lstat.block_size,
           lstat.mod_time, lstat.access_time,
           new FsPermission((short) lstat.mode), System.getProperty("user.name"), null,
           path.makeQualified(this));

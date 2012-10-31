@@ -139,7 +139,7 @@ abstract class CephFS {
    *  int fh: a file descriptor
    * Returns: an int containing the number of times replicated.
    */
-  abstract protected int ceph_replication(String path) throws IOException;
+  abstract protected int ceph_replication(Path path) throws IOException;
 
   /*
    * Find the IP address of the primary OSD for a given file and offset.

@@ -282,8 +282,8 @@ class CephFaker extends CephFS {
     return ret;
   }
 
-  protected int ceph_replication(String path) {
-    path = prepare_path(path);
+  protected int ceph_replication(Path pth) {
+    String path = prepare_path(pth.toUri().getPath());
     int ret = -1; // -1 for failure
 
     try {

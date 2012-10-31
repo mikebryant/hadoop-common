@@ -194,12 +194,12 @@ class CephTalker extends CephFS {
     return true;
   }
 
-  protected int ceph_replication(String path) throws IOException {
+  protected int ceph_replication(Path path) throws IOException {
     CephStat stat = new CephStat();
-    mount.lstat(path, stat);
+    mount.lstat(pathString(path), stat);
     int replication = 1;
     if (stat.is_file) {
-      int fd = mount.open(path, 0, CephMount.O_RDONLY);
+      int fd = mount.open(pathString(path), 0, CephMount.O_RDONLY);
       replication = mount.get_file_replication(fd);
       mount.close(fd);
     }
