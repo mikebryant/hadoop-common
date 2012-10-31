@@ -114,14 +114,12 @@ class CephTalker extends CephFS {
     return true;
   }
 
-  protected boolean ceph_rmdir(String path) throws IOException {
-    mount.rmdir(path);
-    return true;
+  void rmdir(Path path) throws IOException {
+    mount.rmdir(pathString(path));
   }
 
-  protected boolean ceph_unlink(String path) throws IOException {
-    mount.unlink(path);
-    return true;
+  void unlink(Path path) throws IOException {
+    mount.unlink(pathString(path));
   }
 
   protected boolean ceph_rename(String old_path, String new_path) throws IOException {

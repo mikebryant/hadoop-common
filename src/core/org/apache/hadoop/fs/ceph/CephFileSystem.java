@@ -222,6 +222,7 @@ public class CephFileSystem extends FileSystem {
     return path.toUri().getPath();
   }
 
+
   /**
    * Check if a path exists.
    * Overriden because it's moderately faster than the generic implementation.
@@ -582,75 +583,39 @@ public class CephFileSystem extends FileSystem {
 		return delete(path, false);
 	}
 
-  /**
-   * Delete the given path, and optionally its children.
-   * @param path the path to delete.
-   * @param recursive If the path is a non-empty directory and this is false,
-   * delete will throw an IOException. If path is a file this is ignored.
-   * @return true if the delete succeeded, false otherwise (including if
-   * path doesn't exist).
-   * @throws IOException if you attempt to non-recursively delete a directory,
-   * or you attempt to delete the root directory.
-   */
+  /** {@inheritDoc} */
   public boolean delete(Path path, boolean recursive) throws IOException {
-    LOG.debug("delete:enter with path " + path + " and recursive=" + recursive);
-    Path abs_path = makeAbsolute(path);
+    path = makeAbsolute(path);
 
-    // sanity check
-    if (abs_path.equals(root)) {
-      throw new IOException("Error: deleting the root directory is a Bad Idea.");
-    }
-    if (!exists(abs_path)) {
+    /* path exists? */
+    FileStatus status;
+    try {
+      status = getFileStatus(path);
+    } catch (FileNotFoundException e) {
       return false;
     }
 
-    // if the path is a file, try to delete it.
-    if (isFile(abs_path)) {
-      LOG.trace("delete:calling ceph_unlink from Java with path " + abs_path);
-      boolean result = ceph.ceph_unlink(getCephPath(abs_path));
-
-      if (!result) {
-        LOG.error(
-            "delete: failed to delete file \"" + abs_path.toString() + "\".");
-      }
-      LOG.debug("delete:exit with success=" + result);
-      return result;
+    /* we're done if its a file */
+    if (!status.isDir()) {
+      ceph.unlink(path);
+      return true;
     }
 
-    /* The path is a directory, so recursively try to delete its contents,
-     and then delete the directory. */
-    // get the entries; listPaths will remove . and .. for us
-    Path[] contents = listPaths(abs_path);
-
-    if (contents == null) {
-      LOG.error(
-          "delete: Failed to read contents of directory \""
-              + abs_path.toString() + "\" while trying to delete it, BAILING");
+    /* get directory contents */
+    FileStatus[] dirlist = listStatus(path);
+    if (dirlist == null)
       return false;
-    }
-    if (!recursive && contents.length > 0) {
-      throw new IOException("Directories must be deleted recursively!");
-    }
-    // delete the entries
-    LOG.debug("delete: recursively calling delete on contents of " + abs_path);
-    for (Path p : contents) {
-      if (!delete(p, true)) {
-        LOG.error(
-            "delete: Failed to delete file \"" + p.toString()
-            + "\" while recursively deleting \"" + abs_path.toString()
-            + "\", BAILING");
+
+    if (!recursive && dirlist.length > 0)
+      throw new IOException("Directory " + path.toString() + "is not empty.");
+
+    for (FileStatus fs : dirlist) {
+      if (!delete(fs.getPath(), recursive))
         return false;
-      }
     }
-    // if we've come this far it's a now-empty directory, so delete it!
-    boolean result = ceph.ceph_rmdir(getCephPath(abs_path));
 
-    if (!result) {
-      LOG.error(
-          "delete: failed to delete \"" + abs_path.toString() + "\", BAILING");
-    }
-    LOG.debug("delete:exit");
-    return result;
+    ceph.rmdir(path);
+    return true;
   }
 
   /**

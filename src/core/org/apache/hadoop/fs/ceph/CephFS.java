@@ -39,6 +39,8 @@ abstract class CephFS {
   abstract void initialize(URI uri, Configuration conf) throws IOException;
   abstract int open(Path path, int flags, int mode) throws IOException;
   abstract void fstat(int fd, CephStat stat) throws IOException;
+  abstract void unlink(Path path) throws IOException;
+  abstract void rmdir(Path path) throws IOException;
 
   /*
    * Returns the current working directory (absolute) as a String
@@ -52,22 +54,6 @@ abstract class CephFS {
    * Returns: true on success, false otherwise.
    */
   abstract protected boolean ceph_setcwd(String path) throws IOException;
-
-  /*
-   * Given a path to a directory, removes the directory if empty.
-   * Inputs:
-   *  jstring j_path: The path (relative or absolute) to the directory
-   * Returns: true on successful delete; false otherwise
-   */
-  abstract protected boolean ceph_rmdir(String path) throws IOException;
-
-  /*
-   * Given a path, unlinks it.
-   * Inputs:
-   *  String path: The path (relative or absolute) to the file or empty dir
-   * Returns: true if the unlink occurred, false otherwise.
-   */
-  abstract protected boolean ceph_unlink(String path) throws IOException;
 
   /*
    * Changes a given path name to a new name, assuming new_path doesn't exist.

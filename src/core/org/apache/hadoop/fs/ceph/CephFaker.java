@@ -96,31 +96,17 @@ class CephFaker extends CephFS {
   }
 
   // the caller is responsible for ensuring empty dirs
-  protected boolean ceph_rmdir(String pth) {
-    Path path = new Path(prepare_path(pth));
-    boolean ret = false;
-
-    try {
-      if (localFS.listStatus(path).length <= 1) {
-        ret = localFS.delete(path, true);
-      }
-    } catch (IOException e) {}
-    return ret;
+  void rmdir(Path pth) throws IOException {
+    Path path = new Path(prepare_path(pth.toUri().getPath()));
+    if (localFS.listStatus(path).length <= 1) {
+      localFS.delete(path, true);
+    }
   }
 
   // this needs to work on (empty) directories too
-  protected boolean ceph_unlink(String path) {
-    path = prepare_path(path);
-    boolean ret = false;
-
-    if (ceph_isdirectory(path)) {
-      ret = ceph_rmdir(path);
-    } else {
-      try {
-        ret = localFS.delete(new Path(path), false);
-      } catch (IOException e) {}
-    }
-    return ret;
+  void unlink(Path path) throws IOException {
+    String pathStr = prepare_path(path.toUri().getPath());
+    localFS.delete(new Path(pathStr), false);
   }
 
   protected boolean ceph_rename(String oldName, String newName) {
@@ -187,9 +173,6 @@ class CephFaker extends CephFS {
 
   protected String[] ceph_getdir(String path) {
     path = prepare_path(path);
-    if (!ceph_isdirectory(path)) {
-      return null;
-    }
     try {
       FileStatus[] stats = localFS.listStatus(new Path(path));
       String[] names = new String[stats.length];
@@ -204,20 +187,10 @@ class CephFaker extends CephFS {
     return null;
   }
 
-  protected int ceph_mkdirs(String path, int mode) {
+  protected int ceph_mkdirs(String path, int mode) throws IOException {
     path = prepare_path(path);
-    // debug("ceph_mkdirs on " + path, INFO);
-    try {
-      if (localFS.mkdirs(new Path(path), new FsPermission((short) mode))) {
-        return 0;
-      }
-    } catch (IOException e) {}
-    if (ceph_isdirectory(path)) { // apparently it already existed
-      return -EEXIST;
-    } else if (ceph_isfile(path)) {
-			return -ENOTDIR;
-		}
-    return -1;
+    localFS.mkdirs(new Path(path), new FsPermission((short) mode));
+    return 0;
   }
 
   /*
