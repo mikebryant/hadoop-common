@@ -25,7 +25,10 @@ package org.apache.hadoop.fs.ceph;
 import java.io.IOException;
 import java.net.URI;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.Configuration;
+
+import com.ceph.fs.CephStat;
 
 abstract class CephFS {
 
@@ -34,6 +37,8 @@ abstract class CephFS {
   protected static final int ENOENT = 2;
 
   abstract void initialize(URI uri, Configuration conf) throws IOException;
+  abstract int open(Path path, int flags, int mode) throws IOException;
+  abstract void fstat(int fd, CephStat stat) throws IOException;
 
   /*
    * Returns the current working directory (absolute) as a String
@@ -123,15 +128,6 @@ abstract class CephFS {
    * Returns: an int filehandle, or a number<0 if an error occurs.
    */
   abstract protected int ceph_open_for_append(String path);
-
-  /*
-   * Open a file for reading.
-   * Opening a dir is possible but may have bad results.
-   * Inputs:
-   *  String path: The path to open.
-   * Returns: an int filehandle, or a number<0 if an error occurs.
-   */
-  abstract protected int ceph_open_for_read(String path) throws IOException;
 
   /*
    * Opens a file for overwriting; creates it if necessary.

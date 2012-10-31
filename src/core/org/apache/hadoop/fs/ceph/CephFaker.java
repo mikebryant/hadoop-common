@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 
+import com.ceph.fs.CephStat;
 
 class CephFaker extends CephFS {
   private static final Log LOG = LogFactory.getLog(CephFaker.class);
@@ -237,15 +238,15 @@ class CephFaker extends CephFS {
     return -1; // failure
   }
 
-  protected int ceph_open_for_read(String path) {
-    path = prepare_path(path);
+  protected int open(Path path, int flags, int mode) {
+    String pathStr = prepare_path(path.toUri().getPath());
     FSDataInputStream stream;
 
     try {
-      stream = localFS.open(new Path(path));
+      stream = localFS.open(new Path(pathStr));
       files.put(new Integer(fileCount), stream);
-      filenames.put(new Integer(fileCount), path);
-      LOG.info("ceph_open_for_read fh:" + fileCount + ", pathname:" + path);
+      filenames.put(new Integer(fileCount), pathStr);
+      LOG.info("ceph_open_for_read fh:" + fileCount + ", pathname:" + pathStr);
       return fileCount++;
     } catch (IOException e) {}
     return -1; // failure
@@ -308,6 +309,18 @@ class CephFaker extends CephFS {
     files = null;
     filenames = null;
     return true;
+  }
+
+  void fstat(int fd, CephStat stat) throws IOException {
+    String path = filenames.get(new Integer(fd));
+    CephFileSystem.Stat fill = new CephFileSystem.Stat();
+    ceph_stat(path, fill);
+    stat.size = fill.size;
+    stat.is_directory = fill.is_dir;
+    stat.blksize = fill.block_size;
+    stat.m_time = fill.mod_time;
+    stat.a_time = fill.access_time;
+    stat.mode = fill.mode;
   }
 
   protected boolean ceph_stat(String pth, CephFileSystem.Stat fill) {

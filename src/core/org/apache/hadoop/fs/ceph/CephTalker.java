@@ -25,6 +25,7 @@ import java.net.URI;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.lang.StringUtils;
@@ -39,6 +40,10 @@ class CephTalker extends CephFS {
 
   public CephTalker(Configuration conf, Log log) {
     mount = null;
+  }
+
+  private String pathString(Path path) {
+    return path.toUri().getPath();
   }
 
   void initialize(URI uri, Configuration conf) throws IOException {
@@ -78,6 +83,26 @@ class CephTalker extends CephFS {
     mount.mount(root);
 
     mount.chdir("/");
+  }
+
+  /*
+   * Open a file. Ceph will not complain if we open a directory, but this
+   * isn't something that Hadoop expects and we should throw an exception in
+   * this case.
+   */
+  int open(Path path, int flags, int mode) throws IOException {
+    int fd = mount.open(pathString(path), flags, mode);
+    CephStat stat = new CephStat();
+    fstat(fd, stat);
+    if (stat.is_directory) {
+      mount.close(fd);
+      throw new FileNotFoundException();
+    }
+    return fd;
+  }
+
+  void fstat(int fd, CephStat stat) throws IOException {
+    mount.fstat(fd, stat);
   }
 
   protected String ceph_getcwd() throws IOException {
@@ -158,10 +183,6 @@ class CephTalker extends CephFS {
   }
 
   protected native int ceph_open_for_append(String path);
-
-  protected int ceph_open_for_read(String path) throws IOException {
-    return mount.open(path, CephMount.O_RDONLY, 0);
-  }
 
   protected int ceph_open_for_overwrite(String path, int mode) throws IOException {
     int flags = CephMount.O_WRONLY|CephMount.O_CREAT|CephMount.O_TRUNC;

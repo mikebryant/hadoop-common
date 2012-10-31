@@ -46,6 +46,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.net.DNS;
 
 import com.ceph.fs.CephFileAlreadyExistsException;
+import com.ceph.fs.CephMount;
+import com.ceph.fs.CephStat;
 
 
 /**
@@ -122,6 +124,24 @@ public class CephFileSystem extends FileSystem {
     this.uri = URI.create(uri.getScheme() + "://" + uri.getAuthority());
     this.workingDir = getHomeDirectory();
     CEPH_NAMESERVER = conf.get(CEPH_NAMESERVER_KEY, CEPH_NAMESERVER_DEFAULT);
+  }
+
+  /**
+   * Open a Ceph file and attach the file handle to an FSDataInputStream.
+   * @param path The file to open
+   * @param bufferSize Ceph does internal buffering; but you can buffer in
+   *   the Java code too if you like.
+   * @return FSDataInputStream reading from the given path.
+   * @throws IOException if the path DNE or is a
+   * directory, or there is an error getting data to set up the FSDataInputStream.
+   */
+  public FSDataInputStream open(Path path, int bufferSize) throws IOException {
+    path = makeAbsolute(path);
+    int fd = ceph.open(path, CephMount.O_RDONLY, 0);
+    CephStat stat = new CephStat();
+    ceph.fstat(fd, stat);
+    return new FSDataInputStream(
+            new CephInputStream(getConf(), ceph, fd, stat.size, bufferSize));
   }
 
   /**
@@ -466,56 +486,6 @@ public class CephFileSystem extends FileSystem {
   }
 
   /**
-   * Open a Ceph file and attach the file handle to an FSDataInputStream.
-   * @param path The file to open
-   * @param bufferSize Ceph does internal buffering; but you can buffer in
-   *   the Java code too if you like.
-   * @return FSDataInputStream reading from the given path.
-   * @throws IOException if the path DNE or is a
-   * directory, or there is an error getting data to set up the FSDataInputStream.
-   */
-  public FSDataInputStream open(Path path, int bufferSize) throws IOException {
-    LOG.debug("open:enter with path " + path);
-    Path abs_path = makeAbsolute(path);
-
-    int fh = ceph.ceph_open_for_read(getCephPath(abs_path));
-
-    if (fh < 0) { // uh-oh, something's bad!
-      if (fh == -ceph.ENOENT) { // well that was a stupid open
-        throw new IOException(
-            "open:  absolute path \"" + abs_path.toString()
-            + "\" does not exist");
-      } else { // hrm...the file exists but we can't open it :(
-        throw new IOException("open: Failed to open file " + abs_path.toString());
-      }
-    }
-
-    if (getFileStatus(abs_path).isDir()) { // yes, it is possible to open Ceph directories
-      // but that doesn't mean you should in Hadoop!
-      ceph.ceph_close(fh);
-      throw new IOException(
-          "open:  absolute path \"" + abs_path.toString() + "\" is a directory!");
-    }
-    Stat lstat = new Stat();
-
-    LOG.trace("open:calling ceph_stat from Java");
-    ceph.ceph_stat(getCephPath(abs_path), lstat);
-    LOG.trace("open:returned to Java");
-    long size = lstat.size;
-
-    if (size < 0) {
-      throw new IOException(
-          "Failed to get file size for file " + abs_path.toString()
-          + " but succeeded in opening file. Something bizarre is going on.");
-    }
-    FSInputStream cephIStream = new CephInputStream(getConf(), ceph, fh, size,
-        bufferSize);
-
-    LOG.debug("open:exit");
-    return new FSDataInputStream(cephIStream);
-  }
-
-  /**
    * Rename a file or directory.
    * @param src The current path of the file/directory
    * @param dst The new name for the path.
@@ -585,7 +555,7 @@ public class CephFileSystem extends FileSystem {
   public BlockLocation[] getFileBlockLocations(FileStatus file, long start, long len) throws IOException {
     Path abs_path = makeAbsolute(file.getPath());
 
-    int fh = ceph.ceph_open_for_read(getCephPath(abs_path));
+    int fh = ceph.open(abs_path, CephMount.O_RDONLY, 0);
     if (fh < 0) {
       LOG.error("getFileBlockLocations:got error " + fh + ", exiting and returning null!");
       return null;
