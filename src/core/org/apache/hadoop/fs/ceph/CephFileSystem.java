@@ -79,10 +79,6 @@ public class CephFileSystem extends FileSystem {
   private final Path root;
   private CephFS ceph = null;
 
-  private static String CEPH_NAMESERVER;
-  private static final String CEPH_NAMESERVER_KEY = "fs.ceph.nameserver";
-  private static final String CEPH_NAMESERVER_DEFAULT = "localhost";
-
   /**
    * Create a new CephFileSystem.
    */
@@ -123,7 +119,6 @@ public class CephFileSystem extends FileSystem {
     setConf(conf);
     this.uri = URI.create(uri.getScheme() + "://" + uri.getAuthority());
     this.workingDir = getHomeDirectory();
-    CEPH_NAMESERVER = conf.get(CEPH_NAMESERVER_KEY, CEPH_NAMESERVER_DEFAULT);
   }
 
   /**
@@ -474,25 +469,6 @@ public class CephFileSystem extends FileSystem {
     return result;
   }
 
-  /*
-   * Attempt to convert an IP into its hostname
-   */
-  private String[] ips2Hosts(String[] ips) {
-    ArrayList<String> hosts = new ArrayList<String>();
-    for (String ip : ips) {
-      try {
-        String host = DNS.reverseDns(InetAddress.getByName(ip), CEPH_NAMESERVER);
-        if (host.charAt(host.length()-1) == '.') {
-          host = host.substring(0, host.length()-1);
-        }
-        hosts.add(host); /* append */
-      } catch (Exception e) {
-        LOG.error("reverseDns ["+ip+"] failed: "+ e);
-      }
-    }
-    return hosts.toArray(new String[hosts.size()]);
-  }
-
   /**
    * Get a BlockLocation object for each block in a file.
    *
@@ -523,8 +499,7 @@ public class CephFileSystem extends FileSystem {
       long offset = start + i * blockSize;
       long blockStart = start + i * blockSize - (start % blockSize);
       String ips[] = ceph.ceph_hosts(fh, offset);
-      String hosts[] = ips2Hosts(ips);
-      locations[i] = new BlockLocation(null, hosts, blockStart, blockSize);
+      locations[i] = new BlockLocation(null, ips, blockStart, blockSize);
       LOG.debug("getFileBlockLocations: location[" + i + "]: " + locations[i]);
     }
 
