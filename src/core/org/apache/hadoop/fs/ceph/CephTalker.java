@@ -134,16 +134,16 @@ class CephTalker extends CephFS {
     return (long)block_size;
   }
 
-  protected String[] ceph_getdir(String path) throws IOException {
+  String[] listdir(Path path) throws IOException {
     CephStat stat = new CephStat();
     try {
-      mount.lstat(path, stat);
+      mount.lstat(pathString(path), stat);
     } catch (FileNotFoundException e) {
       return null;
     }
-    if (stat.is_file)
+    if (!stat.is_directory)
       return null;
-    return mount.listdir(path);
+    return mount.listdir(pathString(path));
   }
 
   protected int ceph_mkdirs(String path, int mode) throws IOException {

@@ -138,8 +138,8 @@ class CephFaker extends CephFS {
     }
   }
 
-  protected String[] ceph_getdir(String path) {
-    path = prepare_path(path);
+  String[] listdir(Path pth) throws IOException {
+    String path = prepare_path(pth.toUri().getPath());
     try {
       FileStatus[] stats = localFS.listStatus(new Path(path));
       String[] names = new String[stats.length];

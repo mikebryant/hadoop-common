@@ -286,23 +286,19 @@ public class CephFileSystem extends FileSystem {
    *         null if path does not exist.
    */
   public FileStatus[] listStatus(Path path) throws IOException {
-    LOG.debug("listStatus:enter with path " + path);
-    Path abs_path = makeAbsolute(path);
-    Path[] paths = listPaths(abs_path);
+    path = makeAbsolute(path);
 
-    if (paths != null) {
-      FileStatus[] statuses = new FileStatus[paths.length];
-
-      for (int i = 0; i < paths.length; ++i) {
-        statuses[i] = getFileStatus(paths[i]);
+    String[] dirlist = ceph.listdir(path);
+    if (dirlist != null) {
+      FileStatus[] status = new FileStatus[dirlist.length];
+      for (int i = 0; i < status.length; i++) {
+        status[i] = getFileStatus(new Path(path, dirlist[i]));
       }
-      LOG.debug("listStatus:exit");
-      return statuses;
+      return status;
     }
 
-    if (isFile(path)) {
+    if (isFile(path))
       return new FileStatus[] { getFileStatus(path) };
-    }
 
     return null;
   }
@@ -577,41 +573,6 @@ public class CephFileSystem extends FileSystem {
       return path;
     }
     return new Path(workingDir, path);
-  }
-
-  private Path[] listPaths(Path path) throws IOException {
-    LOG.debug("listPaths:enter with path " + path);
-    String dirlist[];
-
-    Path abs_path = makeAbsolute(path);
-
-    // If it's a directory, get the listing. Otherwise, complain and give up.
-    LOG.debug("calling ceph_getdir from Java with path " + abs_path);
-    dirlist = ceph.ceph_getdir(getCephPath(abs_path));
-    LOG.debug("returning from ceph_getdir to Java");
-
-    if (dirlist == null) {
-      return null;
-    }
-
-    // convert the strings to Paths
-    Path[] paths = new Path[dirlist.length];
-
-    for (int i = 0; i < dirlist.length; ++i) {
-      LOG.trace(
-          "Raw enumeration of paths in \"" + abs_path.toString() + "\": \""
-          + dirlist[i] + "\"");
-      // convert each listing to an absolute path
-      Path raw_path = new Path(dirlist[i]);
-
-      if (raw_path.isAbsolute()) {
-        paths[i] = raw_path;
-      } else {
-        paths[i] = new Path(abs_path, raw_path);
-      }
-    }
-    LOG.debug("listPaths:exit");
-    return paths;
   }
 
   static class Stat {

@@ -41,6 +41,7 @@ abstract class CephFS {
   abstract void fstat(int fd, CephStat stat) throws IOException;
   abstract void unlink(Path path) throws IOException;
   abstract void rmdir(Path path) throws IOException;
+  abstract String[] listdir(Path path) throws IOException;
 
   /*
    * Returns the current working directory (absolute) as a String
@@ -73,16 +74,6 @@ abstract class CephFS {
    *  corresponding to the standard C++ error codes (which are positive).
    */
   abstract protected long ceph_getblocksize(String path) throws IOException;
-
-  /*
-   * Get the contents of a given directory.
-   * Inputs:
-   *  String path: The path (relative or absolute) to the directory.
-   * Returns: A Java String[] of the contents of the directory, or
-   *  NULL if there is an error (ie, path is not a dir). This listing
-   *  will not contain . or .. entries.
-   */
-  abstract protected String[] ceph_getdir(String path) throws IOException;
 
   /*
    * Create the specified directory and any required intermediate ones with the
