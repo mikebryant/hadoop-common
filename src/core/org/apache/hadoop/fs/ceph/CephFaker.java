@@ -125,16 +125,6 @@ class CephFaker extends CephFS {
     }
   }
 
-  protected boolean ceph_exists(String path) {
-    path = prepare_path(path);
-    boolean ret = false;
-
-    try {
-      ret = localFS.exists(new Path(path));
-    } catch (IOException e) {}
-    return ret;
-  }
-
   protected long ceph_getblocksize(String path) {
     path = prepare_path(path);
     try {
@@ -146,29 +136,6 @@ class CephFaker extends CephFS {
     } catch (IOException e) {
       return -1; // just fail generically
     }
-  }
-
-  protected boolean ceph_isdirectory(String path) {
-    path = prepare_path(path);
-    try {
-      FileStatus status = localFS.getFileStatus(new Path(path));
-
-      return status.isDir();
-    } catch (IOException e) {
-      return false;
-    }
-  }
-
-  protected boolean ceph_isfile(String path) {
-    path = prepare_path(path);
-    boolean ret = false;
-
-    try {
-      FileStatus status = localFS.getFileStatus(new Path(path));
-
-      ret = !status.isDir();
-    } catch (Exception e) {}
-    return ret;
   }
 
   protected String[] ceph_getdir(String path) {

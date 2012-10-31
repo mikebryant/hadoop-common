@@ -65,12 +65,6 @@ abstract class CephFS {
   abstract protected boolean ceph_rename(String old_path, String new_path) throws IOException;
 
   /*
-   * Returns true if it the input path exists, false
-   * if it does not or there is an unexpected failure.
-   */
-  abstract protected boolean ceph_exists(String path) throws IOException;
-
-  /*
    * Get the block size for a given path.
    * Input:
    *  String path: The path (relative or absolute) you want
@@ -79,16 +73,6 @@ abstract class CephFS {
    *  corresponding to the standard C++ error codes (which are positive).
    */
   abstract protected long ceph_getblocksize(String path) throws IOException;
-
-  /*
-   * Returns true if the given path is a directory, false otherwise.
-   */
-  abstract protected boolean ceph_isdirectory(String path) throws IOException;
-
-  /*
-   * Returns true if the given path is a file; false otherwise.
-   */
-  abstract protected boolean ceph_isfile(String path) throws IOException;
 
   /*
    * Get the contents of a given directory.

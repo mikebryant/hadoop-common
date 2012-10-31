@@ -224,30 +224,6 @@ public class CephFileSystem extends FileSystem {
 
 
   /**
-   * Check if a path exists.
-   * Overriden because it's moderately faster than the generic implementation.
-   * @param path The file to check existence on.
-   * @return true if the file exists, false otherwise.
-   */
-  @Override
-  public boolean exists(Path path) throws IOException {
-    LOG.debug("exists:enter with path " + path);
-    boolean result;
-    Path abs_path = makeAbsolute(path);
-
-    if (abs_path.equals(root)) {
-      result = true;
-    } else {
-      LOG.trace(
-          "exists:Calling ceph_exists from Java on path " + abs_path.toString());
-      result = ceph.ceph_exists(getCephPath(abs_path));
-      LOG.trace("exists:Returned from ceph_exists to Java");
-    }
-    LOG.debug("exists:exit with value " + result);
-    return result;
-  }
-
-  /**
    * Create a directory and any nonexistent parents. Any portion
    * of the directory tree can exist without error.
    * @param path The directory path to create
@@ -274,28 +250,6 @@ public class CephFileSystem extends FileSystem {
       LOG.debug("mkdirs:exiting succesfully");
       return true;
     }
-  }
-
-  /**
-   * Check if a path is a file. This is moderately faster than the
-   * generic implementation.
-   * @param path The path to check.
-   * @return true if the path is definitely a file, false otherwise.
-   */
-  @Override
-  public boolean isFile(Path path) throws IOException {
-    LOG.debug("isFile:enter with path " + path);
-    Path abs_path = makeAbsolute(path);
-    boolean result;
-
-    if (abs_path.equals(root)) {
-      result = false;
-    } else {
-      LOG.trace("isFile:entering ceph_isfile from Java");
-      result = ceph.ceph_isfile(getCephPath(abs_path));
-    }
-    LOG.debug("isFile:exit with result " + result);
-    return result;
   }
 
   /**

@@ -127,36 +127,11 @@ class CephTalker extends CephFS {
     return true;
   }
 
-  protected boolean ceph_exists(String path) throws IOException {
-    CephStat stat = new CephStat();
-    try {
-      mount.lstat(path, stat);
-      return true;
-    } catch (FileNotFoundException e) {}
-    return false;
-  }
-
   protected long ceph_getblocksize(String path) throws IOException {
     int fd = mount.open(path, CephMount.O_RDONLY, 0);
     int block_size = mount.get_file_stripe_unit(fd);
     mount.close(fd);
     return (long)block_size;
-  }
-
-  protected boolean ceph_isdirectory(String path) throws IOException {
-    CephStat stat = new CephStat();
-    mount.lstat(path, stat);
-    return stat.is_directory;
-  }
-
-  protected boolean ceph_isfile(String path) throws IOException {
-    CephStat stat = new CephStat();
-    try {
-      mount.lstat(path, stat);
-    } catch (FileNotFoundException e) {
-      return false;
-    }
-    return stat.is_file;
   }
 
   protected String[] ceph_getdir(String path) throws IOException {
