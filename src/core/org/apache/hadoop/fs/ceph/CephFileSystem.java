@@ -76,14 +76,12 @@ public class CephFileSystem extends FileSystem {
   private URI uri;
 
   private Path workingDir;
-  private final Path root;
   private CephFS ceph = null;
 
   /**
    * Create a new CephFileSystem.
    */
   public CephFileSystem() {
-    root = new Path("/");
   }
 
   /**
@@ -95,7 +93,6 @@ public class CephFileSystem extends FileSystem {
    */
   public CephFileSystem(CephFS ceph_fs) {
     super();
-    root = new Path("/");
     ceph = ceph_fs;
   }
 
