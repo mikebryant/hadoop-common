@@ -110,62 +110,18 @@ public class CephFileSystem extends FileSystem {
     return uri;
   }
 
-  /**
-   * Should be called after constructing a CephFileSystem but before calling
-   * any other methods.
-   * Starts up the connection to Ceph, reads in configuraton options, etc.
-   * @param uri The URI for this filesystem.
-   * @param conf The Hadoop Configuration to retrieve properties from.
-   * @throws IOException if necessary properties are unset.
-   */
+  /** {@inheritDoc} */
   @Override
   public void initialize(URI uri, Configuration conf) throws IOException {
     super.initialize(uri, conf);
-    setConf(conf);
-    this.uri = URI.create(uri.getScheme() + "://" + uri.getAuthority());
     if (ceph == null) {
       ceph = new CephTalker(conf, LOG);
     }
-
-    CEPH_NAMESERVER = conf.get(CEPH_NAMESERVER_KEY, CEPH_NAMESERVER_DEFAULT);
-
-    // build up the arguments for Ceph
-    String arguments = "CephFSInterface";
-
-    arguments += conf.get("fs.ceph.commandLine", "");
-    if (conf.get("fs.ceph.clientDebug") != null) {
-      arguments += " --debug_client ";
-      arguments += conf.get("fs.ceph.clientDebug");
-    }
-    if (conf.get("fs.ceph.messengerDebug") != null) {
-      arguments += " --debug_ms ";
-      arguments += conf.get("fs.ceph.messengerDebug");
-    }
-    if (conf.get("fs.ceph.monAddr") != null) {
-      arguments += " -m ";
-      arguments += conf.get("fs.ceph.monAddr");
-    }
-    arguments += " --client-readahead-max-periods="
-        + conf.get("fs.ceph.readahead", "1");
-    // make sure they gave us a ceph monitor address or conf file
-    LOG.info("initialize:Ceph initialization arguments: " + arguments);
-    if ((conf.get("fs.ceph.monAddr") == null) && (arguments.indexOf("-m") == -1)
-        && (arguments.indexOf("-c") == -1)) {
-      LOG.fatal("initialize:You need to specify a Ceph monitor address.");
-      throw new IOException(
-          "You must specify a Ceph monitor address or config file!");
-    }
-    // Initialize the client
-    if (!ceph.ceph_initializeClient(uri, conf, arguments,
-        conf.getInt("fs.ceph.blockSize", 1 << 26))) {
-      LOG.fatal("initialize:Ceph initialization failed!");
-      throw new IOException("Ceph initialization failed!");
-    }
-    LOG.info("initialize:Ceph initialized client. Setting cwd to /");
-    ceph.ceph_setcwd("/");
-    LOG.debug("initialize:exit");
-
+    ceph.initialize(uri, conf);
+    setConf(conf);
+    this.uri = URI.create(uri.getScheme() + "://" + uri.getAuthority());
     this.workingDir = getHomeDirectory();
+    CEPH_NAMESERVER = conf.get(CEPH_NAMESERVER_KEY, CEPH_NAMESERVER_DEFAULT);
   }
 
   /**

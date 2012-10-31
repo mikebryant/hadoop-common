@@ -41,8 +41,7 @@ class CephTalker extends CephFS {
     mount = null;
   }
 
-  protected boolean ceph_initializeClient(URI uri, Configuration conf,
-          String arguments, int block_size) throws IOException {
+  void initialize(URI uri, Configuration conf) throws IOException {
     mount = new CephMount("admin");
 
     /*
@@ -78,7 +77,7 @@ class CephTalker extends CephFS {
     String root = StringUtils.stripToNull(uri.getPath());
     mount.mount(root);
 
-    return true;
+    mount.chdir("/");
   }
 
   protected String ceph_getcwd() throws IOException {

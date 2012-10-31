@@ -33,16 +33,8 @@ abstract class CephFS {
   protected static final int EEXIST = 17;
   protected static final int ENOENT = 2;
 
-  /*
-   * Performs any necessary setup to allow general use of the filesystem.
-   * Inputs:
-   *  String argsuments -- a command-line style input of Ceph config params
-   *  int block_size -- the size in bytes to use for blocks
-   * Returns: true on success, false otherwise
-   */
-  abstract protected boolean ceph_initializeClient(URI uri, Configuration conf,
-          String arguments, int block_size) throws IOException;
-	
+  abstract void initialize(URI uri, Configuration conf) throws IOException;
+
   /*
    * Returns the current working directory (absolute) as a String
    */

@@ -44,7 +44,6 @@ class CephFaker extends CephFS {
   private static final Log LOG = LogFactory.getLog(CephFaker.class);
   FileSystem localFS;
   String localPrefix;
-  int blockSize;
   Configuration conf;
   Hashtable<Integer, Object> files;
   Hashtable<Integer, String> filenames;
@@ -57,42 +56,33 @@ class CephFaker extends CephFS {
     filenames = new Hashtable<Integer, String>();
   }
 	
-  protected boolean ceph_initializeClient(URI uri, Configuration conf,
-          String args, int block_size) {
+  void initialize(URI uri, Configuration conf) throws IOException {
     if (!initialized) {
-      // let's remember the default block_size
-      blockSize = block_size;
-
       /* for a real Ceph deployment, this starts up the client, 
        * sets debugging levels, etc. We just need to get the
        * local FileSystem to use, and we'll ignore any
        * command-line arguments. */
-      try {
-        localFS = FileSystem.getLocal(conf);
-        localFS.initialize(URI.create("file://localhost"), conf);
-        localFS.setVerifyChecksum(false);
-        String testDir = conf.get("hadoop.tmp.dir");
+      localFS = FileSystem.getLocal(conf);
+      localFS.initialize(URI.create("file://localhost"), conf);
+      localFS.setVerifyChecksum(false);
+      String testDir = conf.get("hadoop.tmp.dir");
 
-        localPrefix = localFS.getWorkingDirectory().toString();
-        int testDirLoc = localPrefix.indexOf(testDir) - 1;
+      localPrefix = localFS.getWorkingDirectory().toString();
+      int testDirLoc = localPrefix.indexOf(testDir) - 1;
 
-        if (-2 == testDirLoc) {
-          testDirLoc = localPrefix.length();
-        }
-        localPrefix = localPrefix.substring(0, testDirLoc) + "/"
-            + conf.get("hadoop.tmp.dir");
-
-        localFS.setWorkingDirectory(
-            new Path(localPrefix + "/user/" + System.getProperty("user.name")));
-        // I don't know why, but the unit tests expect the default
-        // working dir to be /user/username, so satisfy them!
-        // debug("localPrefix is " + localPrefix, INFO);
-      } catch (IOException e) {
-        return false;
+      if (-2 == testDirLoc) {
+        testDirLoc = localPrefix.length();
       }
+      localPrefix = localPrefix.substring(0, testDirLoc) + "/"
+          + conf.get("hadoop.tmp.dir");
+
+      localFS.setWorkingDirectory(
+          new Path(localPrefix + "/user/" + System.getProperty("user.name")));
+      // I don't know why, but the unit tests expect the default
+      // working dir to be /user/username, so satisfy them!
+      // debug("localPrefix is " + localPrefix, INFO);
       initialized = true;
     }
-    return true;
   }
 
   protected String ceph_getcwd() {
