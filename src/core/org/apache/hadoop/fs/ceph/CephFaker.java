@@ -204,7 +204,7 @@ class CephFaker extends CephFS {
 
   // rather than try and match a Ceph deployment's behavior exactly,
   // just make bad things happen if they try and call methods after this
-  protected boolean ceph_kill_client() {
+  void shutdown() throws IOException {
     // debug("ceph_kill_client", INFO);
     localFS.setWorkingDirectory(new Path(localPrefix));
     // debug("working dir is now " + localFS.getWorkingDirectory(), INFO);
@@ -214,7 +214,6 @@ class CephFaker extends CephFS {
     localFS = null;
     files = null;
     filenames = null;
-    return true;
   }
 
   private void stat(String path, CephStat fill) throws IOException {

@@ -142,11 +142,8 @@ public class CephFileSystem extends FileSystem {
    */
   @Override
   public void close() throws IOException {
-    LOG.debug("close:enter");
     super.close(); // this method does stuff, make sure it's run!
-    LOG.trace("close: Calling ceph_kill_client from Java");
-    ceph.ceph_kill_client();
-    LOG.debug("close:exit");
+    ceph.shutdown();
   }
 
   /**

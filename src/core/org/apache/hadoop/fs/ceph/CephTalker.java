@@ -167,10 +167,9 @@ class CephTalker extends CephFS {
     mount.chmod(pathString(path), mode);
   }
 
-  protected boolean ceph_kill_client() throws IOException {
+  void shutdown() throws IOException {
     mount.unmount();
     mount = null;
-    return true;
   }
 
   protected int ceph_replication(Path path) throws IOException {

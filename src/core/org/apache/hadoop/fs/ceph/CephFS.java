@@ -47,6 +47,7 @@ abstract class CephFS {
   abstract void chmod(Path path, int mode) throws IOException;
   abstract long lseek(int fd, long offset, int whence) throws IOException;
   abstract void close(int fd) throws IOException;
+  abstract void shutdown() throws IOException;
 
   /*
    * Returns the current working directory (absolute) as a String
@@ -85,12 +86,6 @@ abstract class CephFS {
    * given mode.
    */
   abstract protected int ceph_mkdirs(String path, int mode) throws IOException;
-
-  /*
-   * Closes the Ceph client. This should be called before shutting down
-   * (multiple times is okay but redundant).
-   */
-  abstract protected boolean ceph_kill_client() throws IOException;
 
   /*
    * Check how many times a file should be replicated. If it is,
