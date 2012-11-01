@@ -179,7 +179,7 @@ class CephTalker extends CephFS {
     mount.lstat(pathString(path), stat);
     int replication = 1;
     if (stat.is_file) {
-      int fd = mount.open(pathString(path), 0, CephMount.O_RDONLY);
+      int fd = mount.open(pathString(path), CephMount.O_RDONLY, 0);
       replication = mount.get_file_replication(fd);
       mount.close(fd);
     }
