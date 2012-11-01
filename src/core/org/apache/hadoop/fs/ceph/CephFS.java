@@ -97,15 +97,6 @@ abstract class CephFS {
   abstract protected int ceph_replication(Path path) throws IOException;
 
   /*
-   * Find the IP address of the primary OSD for a given file and offset.
-   * Inputs:
-   *  int fh: The filehandle for the file.
-   *  long offset: The offset to get the location of.
-   * Returns: an array of String of the location as IP, or NULL if there is an error.
-   */
-  abstract protected String[] ceph_hosts(int fh, long offset);
-
-  /*
    * Write the given buffer contents to the given filehandle.
    * Inputs:
    *  int fh: The filehandle to write to.

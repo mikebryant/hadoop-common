@@ -472,8 +472,7 @@ public class CephFileSystem extends FileSystem {
     for (int i = 0; i < locations.length; ++i) {
       long offset = start + i * blockSize;
       long blockStart = start + i * blockSize - (start % blockSize);
-      String ips[] = ceph.ceph_hosts(fh, offset);
-      locations[i] = new BlockLocation(null, ips, blockStart, blockSize);
+      locations[i] = new BlockLocation(null, null, blockStart, blockSize);
       LOG.debug("getFileBlockLocations: location[" + i + "]: " + locations[i]);
     }
 

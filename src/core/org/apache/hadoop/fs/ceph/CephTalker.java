@@ -184,10 +184,6 @@ class CephTalker extends CephFS {
     return replication;
   }
 
-  protected String[] ceph_hosts(int fh, long offset) {
-    return new String[] {};
-  }
-
   void setattr(Path path, CephStat stat, int mask) throws IOException {
     mount.setattr(pathString(path), stat, mask);
   }
