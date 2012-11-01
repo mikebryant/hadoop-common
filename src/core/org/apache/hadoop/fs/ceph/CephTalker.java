@@ -159,9 +159,8 @@ class CephTalker extends CephFS {
     return 0;
   }
 
-  protected int ceph_close(int filehandle) throws IOException {
-    mount.close(filehandle);
-    return 0;
+  void close(int fd) throws IOException {
+    mount.close(fd);
   }
 
   void chmod(Path path, int mode) throws IOException {

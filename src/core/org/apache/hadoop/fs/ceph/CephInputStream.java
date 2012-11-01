@@ -241,14 +241,9 @@ public class CephInputStream extends FSInputStream {
   public void close() throws IOException {
     LOG.trace("CephOutputStream.close:enter");
     if (!closed) {
-      int result = ceph.ceph_close(fileHandle);
+      ceph.close(fileHandle);
 
       closed = true;
-      if (result != 0) {
-        throw new IOException(
-            "Close somehow failed!"
-                + "Don't try and use this stream again, though");
-      }
       LOG.trace("CephOutputStream.close:exit");
     }
   }

@@ -207,12 +207,7 @@ public class CephOutputStream extends OutputStream {
     LOG.trace("CephOutputStream.close:enter");
     if (!closed) {
       flush();
-      int result = ceph.ceph_close(fileHandle);
-
-      if (result != 0) {
-        throw new IOException("Close failed!");
-      }
-				
+      ceph.close(fileHandle);
       closed = true;
       LOG.trace("CephOutputStream.close:exit");
     }

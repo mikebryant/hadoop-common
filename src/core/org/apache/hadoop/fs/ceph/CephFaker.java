@@ -185,22 +185,16 @@ class CephFaker extends CephFS {
     return -1; // failure
   }
 
-  protected int ceph_close(int filehandle) {
+  void close(int filehandle) {
     LOG.info("ceph_close(filehandle " + filehandle + ")");
     try {
       ((Closeable) files.get(new Integer(filehandle))).close();
-      if (null == files.get(new Integer(filehandle))) {
-        return -ENOENT; // this isn't quite the right error code,
-        // but the important part is it's negative
-      }
-      return 0; // hurray, success
     } catch (NullPointerException ne) {
       LOG.warn("ceph_close caught NullPointerException!" + ne);
     } // err, how?
     catch (IOException ie) {
       LOG.warn("ceph_close caught IOException!" + ie);
     }
-    return -1; // failure
   }
 
   void chmod(Path pth, int mode) throws IOException {

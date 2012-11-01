@@ -480,7 +480,7 @@ public class CephFileSystem extends FileSystem {
       LOG.debug("getFileBlockLocations: location[" + i + "]: " + locations[i]);
     }
 
-    ceph.ceph_close(fh);
+    ceph.close(fh);
     return locations;
   }
 
