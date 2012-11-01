@@ -159,13 +159,6 @@ class CephTalker extends CephFS {
     return 0;
   }
 
-  protected native int ceph_open_for_append(String path);
-
-  protected int ceph_open_for_overwrite(String path, int mode) throws IOException {
-    int flags = CephMount.O_WRONLY|CephMount.O_CREAT|CephMount.O_TRUNC;
-    return mount.open(path, flags, mode);
-  }
-
   protected int ceph_close(int filehandle) throws IOException {
     mount.close(filehandle);
     return 0;

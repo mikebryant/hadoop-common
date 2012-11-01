@@ -161,47 +161,25 @@ class CephFaker extends CephFS {
     return 0;
   }
 
-  /*
-   * Unlike a real Ceph deployment, you can't do opens on a directory.
-   * Since that has unpredictable behavior and you shouldn't do it anyway,
-   * it's okay.
-   */
-  protected int ceph_open_for_append(String path) {
-    path = prepare_path(path);
-    FSDataOutputStream stream;
-
-    try {
-      stream = localFS.append(new Path(path));
-      files.put(new Integer(fileCount), stream);
-      filenames.put(new Integer(fileCount), path);
-      return fileCount++;
-    } catch (IOException e) {}
-    return -1; // failure
-  }
-
   protected int open(Path path, int flags, int mode) {
     String pathStr = prepare_path(path.toUri().getPath());
-    FSDataInputStream stream;
+
+    int appendFlags = CephMount.O_WRONLY|CephMount.O_CREAT|CephMount.O_APPEND;
+    int overwriteFlags = CephMount.O_WRONLY|CephMount.O_CREAT|CephMount.O_TRUNC;
 
     try {
-      stream = localFS.open(new Path(pathStr));
-      files.put(new Integer(fileCount), stream);
+      if (flags == appendFlags) {
+        FSDataOutputStream stream = localFS.append(new Path(pathStr));
+        files.put(new Integer(fileCount), stream);
+      } else if (flags == overwriteFlags) {
+        FSDataOutputStream stream = localFS.create(new Path(pathStr));
+        files.put(new Integer(fileCount), stream);
+      } else {
+        FSDataInputStream stream = localFS.open(new Path(pathStr));
+        files.put(new Integer(fileCount), stream);
+      }
       filenames.put(new Integer(fileCount), pathStr);
       LOG.info("ceph_open_for_read fh:" + fileCount + ", pathname:" + pathStr);
-      return fileCount++;
-    } catch (IOException e) {}
-    return -1; // failure
-  }
-
-  protected int ceph_open_for_overwrite(String path, int mode) {
-    path = prepare_path(path);
-    FSDataOutputStream stream;
-
-    try {
-      stream = localFS.create(new Path(path));
-      files.put(new Integer(fileCount), stream);
-      filenames.put(new Integer(fileCount), path);
-      LOG.info("ceph_open_for_overwrite fh:" + fileCount + ", pathname:" + path);
       return fileCount++;
     } catch (IOException e) {}
     return -1; // failure

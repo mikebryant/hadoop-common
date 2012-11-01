@@ -85,25 +85,6 @@ abstract class CephFS {
   abstract protected int ceph_mkdirs(String path, int mode) throws IOException;
 
   /*
-   * Open a file to append. If the file does not exist, it will be created.
-   * Opening a dir is possible but may have bad results.
-   * Inputs:
-   *  String path: The path to open.
-   * Returns: an int filehandle, or a number<0 if an error occurs.
-   */
-  abstract protected int ceph_open_for_append(String path);
-
-  /*
-   * Opens a file for overwriting; creates it if necessary.
-   * Opening a dir is possible but may have bad results.
-   * Inputs:
-   *  String path: The path to open.
-   *  int mode: The mode to open with.
-   * Returns: an int filehandle, or a number<0 if an error occurs.
-   */
-  abstract protected int ceph_open_for_overwrite(String path, int mode) throws IOException;
-
-  /*
    * Closes the given file. Returns 0 on success, or a negative
    * error code otherwise.
    */

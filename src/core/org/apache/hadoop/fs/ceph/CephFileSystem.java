@@ -167,7 +167,8 @@ public class CephFileSystem extends FileSystem {
       progress.progress();
     }
     LOG.trace("append: Entering ceph_open_for_append from Java");
-    int fd = ceph.ceph_open_for_append(getCephPath(abs_path));
+    int flags = CephMount.O_WRONLY|CephMount.O_CREAT|CephMount.O_APPEND;
+    int fd = ceph.open(abs_path, flags, 0);
 
     LOG.trace("append: Returned to Java");
     if (progress != null) {
@@ -390,8 +391,8 @@ public class CephFileSystem extends FileSystem {
 
     // Step 3: open the file
     LOG.trace("calling ceph_open_for_overwrite from Java");
-    int fh = ceph.ceph_open_for_overwrite(getCephPath(abs_path),
-        (int) permission.toShort());
+    int flags = CephMount.O_WRONLY|CephMount.O_CREAT|CephMount.O_TRUNC;
+    int fh = ceph.open(abs_path, flags, (int)permission.toShort());
 
     if (progress != null) {
       progress.progress();
