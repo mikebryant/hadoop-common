@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSInputStream;
 
+import com.ceph.fs.CephMount;
 
 /**
  * <p>
@@ -92,7 +93,7 @@ public class CephInputStream extends FSInputStream {
 
       bufValid = 0;
       // attempt to reset to old position. If it fails, too bad.
-      ceph.ceph_seek_from_start(fileHandle, cephPos);
+      ceph.lseek(fileHandle, cephPos, CephMount.SEEK_SET);
       throw new IOException("Failed to fill read buffer! Error code:" + err);
     }
     cephPos += bufValid;
@@ -125,7 +126,7 @@ public class CephInputStream extends FSInputStream {
     }
     long oldPos = cephPos;
 
-    cephPos = ceph.ceph_seek_from_start(fileHandle, targetPos);
+    cephPos = ceph.lseek(fileHandle, targetPos, CephMount.SEEK_SET);
     bufValid = 0;
     bufPos = 0;
     if (cephPos < 0) {

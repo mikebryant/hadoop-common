@@ -45,6 +45,7 @@ abstract class CephFS {
   abstract String[] listdir(Path path) throws IOException;
   abstract void setattr(Path path, CephStat stat, int mask) throws IOException;
   abstract void chmod(Path path, int mode) throws IOException;
+  abstract long lseek(int fd, long offset, int whence) throws IOException;
 
   /*
    * Returns the current working directory (absolute) as a String
@@ -115,13 +116,6 @@ abstract class CephFS {
   abstract protected String[] ceph_hosts(int fh, long offset);
 
   /*
-   * Get the current position in a file (as a long) of a given filehandle.
-   * Returns: (long) current file position on success, or a
-   *  negative error code on failure.
-   */
-  abstract protected long ceph_getpos(int fh) throws IOException;
-
-  /*
    * Write the given buffer contents to the given filehandle.
    * Inputs:
    *  int fh: The filehandle to write to.
@@ -146,12 +140,4 @@ abstract class CephFS {
    *  or an error code otherwise.	 */
   abstract protected int ceph_read(int fh, byte[] buffer, int buffer_offset, int length) throws IOException;
 
-  /*
-   * Seeks to the given position in the given file.
-   * Inputs:
-   *  int fh: The filehandle to seek in.
-   *  long pos: The position to seek to.
-   * Returns: the new position (as a long) of the filehandle on success,
-   *  or a negative error code on failure.	 */
-  abstract protected long ceph_seek_from_start(int fh, long pos) throws IOException;
 }

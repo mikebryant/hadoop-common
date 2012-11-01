@@ -194,8 +194,8 @@ class CephTalker extends CephFS {
     mount.setattr(pathString(path), stat, mask);
   }
 
-  protected long ceph_getpos(int fh) throws IOException {
-    return mount.lseek(fh, 0, CephMount.SEEK_CUR);
+  long lseek(int fd, long offset, int whence) throws IOException {
+    return mount.lseek(fd, offset, whence);
   }
 
   protected int ceph_write(int fh, byte[] buffer, int buffer_offset, int length) throws IOException {
@@ -208,7 +208,4 @@ class CephTalker extends CephFS {
     return (int)mount.read(fh, buffer, length, -1);
   }
 
-  protected long ceph_seek_from_start(int fh, long pos) throws IOException {
-    return mount.lseek(fh, pos, CephMount.SEEK_SET);
-  }
 }

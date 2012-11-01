@@ -279,7 +279,7 @@ class CephFaker extends CephFS {
     localFS.setTimes(new Path(path), mtime, atime);
   }
 
-  protected long ceph_getpos(int fh) {
+  private long ceph_getpos(int fh) {
     long ret = -1; // generic fail
 
     try {
@@ -331,7 +331,17 @@ class CephFaker extends CephFS {
     return (int) ret;
   }
 
-  protected long ceph_seek_from_start(int fh, long pos) {
+  long lseek(int fd, long pos, int whence) throws IOException {
+    if (whence == CephMount.SEEK_SET) {
+      return ceph_seek_from_start(fd, pos);
+    } else if (whence == CephMount.SEEK_CUR && pos == 0) {
+      return ceph_getpos(fd);
+    } else {
+      return -1;
+    }
+  }
+
+  private long ceph_seek_from_start(int fh, long pos) {
     LOG.info("ceph_seek_from_start(fh " + fh + ", pos " + pos + ")");
     long ret = -1; // generic fail
 

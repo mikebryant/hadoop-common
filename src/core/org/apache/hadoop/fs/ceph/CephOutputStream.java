@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.Progressable;
 
+import com.ceph.fs.CephMount;
 
 /**
  * <p>
@@ -78,7 +79,7 @@ public class CephOutputStream extends OutputStream {
    * @return The file offset in bytes.
    */
   public long getPos() throws IOException {
-    return ceph.ceph_getpos(fileHandle);
+    return ceph.lseek(fileHandle, 0, CephMount.SEEK_CUR);
   }
 
   /**
