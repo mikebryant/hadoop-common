@@ -94,7 +94,7 @@ class CephTalker extends CephFS {
     int fd = mount.open(pathString(path), flags, mode);
     CephStat stat = new CephStat();
     fstat(fd, stat);
-    if (stat.is_directory) {
+    if (stat.isDir()) {
       mount.close(fd);
       throw new FileNotFoundException();
     }
@@ -145,7 +145,7 @@ class CephTalker extends CephFS {
     } catch (FileNotFoundException e) {
       return null;
     }
-    if (!stat.is_directory)
+    if (!stat.isDir())
       return null;
     return mount.listdir(pathString(path));
   }
@@ -176,7 +176,7 @@ class CephTalker extends CephFS {
     CephStat stat = new CephStat();
     mount.lstat(pathString(path), stat);
     int replication = 1;
-    if (stat.is_file) {
+    if (stat.isFile()) {
       int fd = mount.open(pathString(path), CephMount.O_RDONLY, 0);
       replication = mount.get_file_replication(fd);
       mount.close(fd);

@@ -255,7 +255,7 @@ public class CephFileSystem extends FileSystem {
     CephStat stat = new CephStat();
     ceph.lstat(path, stat);
 
-    FileStatus status = new FileStatus(stat.size, stat.is_directory,
+    FileStatus status = new FileStatus(stat.size, stat.isDir(),
           ceph.ceph_replication(path), stat.blksize, stat.m_time,
           stat.a_time, new FsPermission((short) stat.mode),
           System.getProperty("user.name"), null, path.makeQualified(this));
