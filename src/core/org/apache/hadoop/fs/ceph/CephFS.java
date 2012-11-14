@@ -48,6 +48,7 @@ abstract class CephFS {
   abstract long lseek(int fd, long offset, int whence) throws IOException;
   abstract void close(int fd) throws IOException;
   abstract void shutdown() throws IOException;
+  abstract void rename(Path src, Path dst) throws IOException;
 
   /*
    * Returns the current working directory (absolute) as a String
@@ -61,15 +62,6 @@ abstract class CephFS {
    * Returns: true on success, false otherwise.
    */
   abstract protected boolean ceph_setcwd(String path) throws IOException;
-
-  /*
-   * Changes a given path name to a new name, assuming new_path doesn't exist.
-   * Inputs:
-   *  jstring j_from: The path whose name you want to change.
-   *  jstring j_to: The new name for the path.
-   * Returns: true if the rename occurred, false otherwise
-   */
-  abstract protected boolean ceph_rename(String old_path, String new_path) throws IOException;
 
   /*
    * Get the block size for a given path.

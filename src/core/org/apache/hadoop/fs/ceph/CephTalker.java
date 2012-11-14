@@ -126,9 +126,8 @@ class CephTalker extends CephFS {
     mount.unlink(pathString(path));
   }
 
-  protected boolean ceph_rename(String old_path, String new_path) throws IOException {
-    mount.rename(old_path, new_path);
-    return true;
+  void rename(Path src, Path dst) throws IOException {
+    mount.rename(pathString(src), pathString(dst));
   }
 
   protected long ceph_getblocksize(String path) throws IOException {

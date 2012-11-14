@@ -417,30 +417,24 @@ public class CephFileSystem extends FileSystem {
    */
   @Override
   public boolean rename(Path src, Path dst) throws IOException {
-    LOG.debug("rename:enter with src:" + src + " and dest:" + dst);
-    Path abs_src = makeAbsolute(src);
-    Path abs_dst = makeAbsolute(dst);
+    src = makeAbsolute(src);
+    dst = makeAbsolute(dst);
 
-    LOG.trace("calling ceph_rename from Java");
-    boolean result = ceph.ceph_rename(getCephPath(abs_src), getCephPath(abs_dst));
+    try {
+      CephStat stat = new CephStat();
+      ceph.lstat(dst, stat);
+      if (stat.isDir())
+        return rename(src, new Path(dst, src.getName()));
+      return false;
+    } catch (FileNotFoundException e) {}
 
-    if (!result) {
-      boolean isDir = false;
-      try {
-        isDir = getFileStatus(abs_dst).isDir();
-      } catch (FileNotFoundException e) {}
-      if (isDir) { // move the srcdir into destdir
-        LOG.debug("ceph_rename failed but dst is a directory!");
-        Path new_dst = new Path(abs_dst, abs_src.getName());
-
-        result = rename(abs_src, new_dst);
-        LOG.debug(
-            "attempt to move " + abs_src.toString() + " to "
-            + new_dst.toString() + "has result:" + result);
-      }
+    try {
+      ceph.rename(src, dst);
+    } catch (FileNotFoundException e) {
+      return false;
     }
-    LOG.debug("rename:exit with result: " + result);
-    return result;
+
+    return true;
   }
 
   /**
