@@ -32,10 +32,6 @@ import com.ceph.fs.CephStat;
 
 abstract class CephFS {
 
-  protected static final int ENOTDIR = 20;
-  protected static final int EEXIST = 17;
-  protected static final int ENOENT = 2;
-
   abstract void initialize(URI uri, Configuration conf) throws IOException;
   abstract int open(Path path, int flags, int mode) throws IOException;
   abstract void fstat(int fd, CephStat stat) throws IOException;
