@@ -457,7 +457,11 @@ public class CephFileSystem extends FileSystem {
       return null;
     }
 
-    long blockSize = ceph.ceph_getblocksize(getCephPath(abs_path));
+    /* Get block size */
+    CephStat stat = new CephStat();
+    ceph.fstat(fh, stat);
+    long blockSize = stat.blksize;
+
     BlockLocation[] locations = new BlockLocation[(int) Math.ceil(len / (float) blockSize)];
 
     for (int i = 0; i < locations.length; ++i) {

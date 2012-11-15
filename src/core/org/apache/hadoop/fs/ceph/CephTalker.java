@@ -121,13 +121,6 @@ class CephTalker extends CephFS {
     mount.rename(pathString(src), pathString(dst));
   }
 
-  protected long ceph_getblocksize(String path) throws IOException {
-    int fd = mount.open(path, CephMount.O_RDONLY, 0);
-    int block_size = mount.get_file_stripe_unit(fd);
-    mount.close(fd);
-    return (long)block_size;
-  }
-
   String[] listdir(Path path) throws IOException {
     CephStat stat = new CephStat();
     try {

@@ -51,16 +51,6 @@ abstract class CephFS {
   abstract void rename(Path src, Path dst) throws IOException;
 
   /*
-   * Get the block size for a given path.
-   * Input:
-   *  String path: The path (relative or absolute) you want
-   *  the block size for.
-   * Returns: block size if the path exists, otherwise a negative number
-   *  corresponding to the standard C++ error codes (which are positive).
-   */
-  abstract protected long ceph_getblocksize(String path) throws IOException;
-
-  /*
    * Create the specified directory and any required intermediate ones with the
    * given mode.
    */
