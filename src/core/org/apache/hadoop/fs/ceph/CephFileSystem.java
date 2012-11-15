@@ -153,39 +153,31 @@ public class CephFileSystem extends FileSystem {
 
   /**
    * Get an FSDataOutputStream to append onto a file.
-   * @param file The File you want to append onto
+   * @param path The File you want to append onto
    * @param bufferSize Ceph does internal buffering but you can buffer in the Java code as well if you like.
    * @param progress The Progressable to report progress to.
    * Reporting is limited but exists.
    * @return An FSDataOutputStream that connects to the file on Ceph.
    * @throws IOException If the file cannot be found or appended to.
    */
-  public FSDataOutputStream append(Path file, int bufferSize,
+  public FSDataOutputStream append(Path path, int bufferSize,
       Progressable progress) throws IOException {
-    LOG.debug("append:enter with path " + file + " bufferSize " + bufferSize);
-    Path abs_path = makeAbsolute(file);
+    path = makeAbsolute(path);
 
     if (progress != null) {
       progress.progress();
     }
-    LOG.trace("append: Entering ceph_open_for_append from Java");
-    int flags = CephMount.O_WRONLY|CephMount.O_CREAT|CephMount.O_APPEND;
-    int fd = ceph.open(abs_path, flags, 0);
 
-    LOG.trace("append: Returned to Java");
+    int fd = ceph.open(path,
+        CephMount.O_WRONLY|CephMount.O_CREAT|CephMount.O_APPEND, 0);
+
     if (progress != null) {
       progress.progress();
     }
-    if (fd < 0) { // error in open
-      throw new IOException(
-          "append: Open for append failed on path \"" + abs_path.toString()
-          + "\"");
-    }
-    CephOutputStream cephOStream = new CephOutputStream(getConf(), ceph, fd,
+
+    CephOutputStream ostream = new CephOutputStream(getConf(), ceph, fd,
         bufferSize);
-
-    LOG.debug("append:exit");
-    return new FSDataOutputStream(cephOStream, statistics);
+    return new FSDataOutputStream(ostream, statistics);
   }
 
   /**
