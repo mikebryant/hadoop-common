@@ -200,17 +200,6 @@ public class CephFileSystem extends FileSystem {
   }
 
   /**
-   * Return only the path component from a potentially fully qualified path.
-   */
-  private String getCephPath(Path path) {
-    if (!path.isAbsolute()) {
-      throw new IllegalArgumentException("Path must be absolute: " + path);
-    }
-    return path.toUri().getPath();
-  }
-
-
-  /**
    * Create a directory and any nonexistent parents. Any portion
    * of the directory tree can exist without error.
    * @param path The directory path to create
@@ -224,7 +213,7 @@ public class CephFileSystem extends FileSystem {
     Path abs_path = makeAbsolute(path);
 
     LOG.trace("mkdirs:calling ceph_mkdirs from Java");
-    int result = ceph.ceph_mkdirs(getCephPath(abs_path), (int) perms.toShort());
+    int result = ceph.ceph_mkdirs(abs_path, (int) perms.toShort());
 
     if (result != 0) {
       LOG.warn(
@@ -375,7 +364,7 @@ public class CephFileSystem extends FileSystem {
 
       if (parent != null) { // if parent is root, we're done
         try {
-          ceph.ceph_mkdirs(getCephPath(parent), permission.toShort());
+          ceph.ceph_mkdirs(parent, permission.toShort());
         } catch (CephFileAlreadyExistsException e) {}
       }
       if (progress != null) {

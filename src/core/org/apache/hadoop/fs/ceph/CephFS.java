@@ -55,7 +55,7 @@ abstract class CephFS {
    * Create the specified directory and any required intermediate ones with the
    * given mode.
    */
-  abstract protected int ceph_mkdirs(String path, int mode) throws IOException;
+  abstract protected int ceph_mkdirs(Path path, int mode) throws IOException;
 
   /*
    * Check how many times a file should be replicated. If it is,

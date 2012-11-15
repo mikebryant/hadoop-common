@@ -139,9 +139,9 @@ class CephTalker extends CephFS {
     return mount.listdir(pathString(path));
   }
 
-  protected int ceph_mkdirs(String path, int mode) throws IOException {
+  protected int ceph_mkdirs(Path path, int mode) throws IOException {
     try {
-      mount.mkdirs(path, mode);
+      mount.mkdirs(pathString(path), mode);
     } catch (CephFileAlreadyExistsException e) {
       return 1;
     }
