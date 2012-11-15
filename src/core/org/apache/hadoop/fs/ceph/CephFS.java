@@ -50,21 +50,13 @@ abstract class CephFS {
   abstract void shutdown() throws IOException;
   abstract void rename(Path src, Path dst) throws IOException;
   abstract short getDefaultReplication();
+  abstract short get_file_replication(Path path) throws IOException;
 
   /*
    * Create the specified directory and any required intermediate ones with the
    * given mode.
    */
   abstract protected int ceph_mkdirs(Path path, int mode) throws IOException;
-
-  /*
-   * Check how many times a file should be replicated. If it is,
-   * degraded it may not actually be replicated this often.
-   * Inputs:
-   *  int fh: a file descriptor
-   * Returns: an int containing the number of times replicated.
-   */
-  abstract protected int ceph_replication(Path path) throws IOException;
 
   /*
    * Write the given buffer contents to the given filehandle.

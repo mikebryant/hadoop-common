@@ -165,7 +165,7 @@ class CephTalker extends CephFS {
     return defaultReplication;
   }
 
-  protected int ceph_replication(Path path) throws IOException {
+  short get_file_replication(Path path) throws IOException {
     CephStat stat = new CephStat();
     mount.lstat(pathString(path), stat);
     int replication = 1;
@@ -174,7 +174,7 @@ class CephTalker extends CephFS {
       replication = mount.get_file_replication(fd);
       mount.close(fd);
     }
-    return replication;
+    return (short)replication;
   }
 
   void setattr(Path path, CephStat stat, int mask) throws IOException {
