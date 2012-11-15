@@ -49,6 +49,7 @@ abstract class CephFS {
   abstract void close(int fd) throws IOException;
   abstract void shutdown() throws IOException;
   abstract void rename(Path src, Path dst) throws IOException;
+  abstract short getDefaultReplication();
 
   /*
    * Create the specified directory and any required intermediate ones with the

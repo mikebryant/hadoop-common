@@ -37,6 +37,7 @@ import com.ceph.fs.CephFileAlreadyExistsException;
 class CephTalker extends CephFS {
 
   private CephMount mount;
+  private short defaultReplication;
 
   public CephTalker(Configuration conf, Log log) {
     mount = null;
@@ -77,6 +78,11 @@ class CephTalker extends CephFS {
           }
       }
     }
+
+    /*
+     * Get default replication from configuration.
+     */
+    defaultReplication = (short)conf.getInt("fs.ceph.replication", 3);
 
     /* Passing root = null to mount() will default to "/" */
     String root = StringUtils.stripToNull(uri.getPath());
@@ -153,6 +159,10 @@ class CephTalker extends CephFS {
   void shutdown() throws IOException {
     mount.unmount();
     mount = null;
+  }
+
+  short getDefaultReplication() {
+    return defaultReplication;
   }
 
   protected int ceph_replication(Path path) throws IOException {

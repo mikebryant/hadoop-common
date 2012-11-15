@@ -515,14 +515,9 @@ public class CephFileSystem extends FileSystem {
     return true;
   }
 
-  /**
-   * Returns the default replication value of 1. This may
-   * NOT be the actual value, as replication is controlled
-   * by a separate Ceph configuration.
-   */
   @Override
   public short getDefaultReplication() {
-    return 1;
+    return ceph.getDefaultReplication();
   }
 
   /**
