@@ -129,11 +129,16 @@ public class CephFileSystem extends FileSystem {
    */
   public FSDataInputStream open(Path path, int bufferSize) throws IOException {
     path = makeAbsolute(path);
+
     int fd = ceph.open(path, CephMount.O_RDONLY, 0);
+
+    /* get file size */
     CephStat stat = new CephStat();
     ceph.fstat(fd, stat);
-    return new FSDataInputStream(
-            new CephInputStream(getConf(), ceph, fd, stat.size, bufferSize));
+
+    CephInputStream istream = new CephInputStream(getConf(), ceph, fd,
+        stat.size, bufferSize);
+    return new FSDataInputStream(istream);
   }
 
   /**
