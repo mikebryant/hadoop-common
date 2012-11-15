@@ -53,10 +53,5 @@ abstract class CephFS {
   abstract short get_file_replication(Path path) throws IOException;
   abstract int write(int fd, byte[] buf, long size, long offset) throws IOException;
   abstract int read(int fd, byte[] buf, long size, long offset) throws IOException;
-
-  /*
-   * Create the specified directory and any required intermediate ones with the
-   * given mode.
-   */
-  abstract protected int ceph_mkdirs(Path path, int mode) throws IOException;
+  abstract void mkdirs(Path path, int mode) throws IOException;
 }

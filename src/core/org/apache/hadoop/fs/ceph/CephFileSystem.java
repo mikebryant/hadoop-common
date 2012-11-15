@@ -209,23 +209,17 @@ public class CephFileSystem extends FileSystem {
    */
   @Override
   public boolean mkdirs(Path path, FsPermission perms) throws IOException {
-    LOG.debug("mkdirs:enter with path " + path);
-    Path abs_path = makeAbsolute(path);
+    path = makeAbsolute(path);
 
-    LOG.trace("mkdirs:calling ceph_mkdirs from Java");
-    int result = ceph.ceph_mkdirs(abs_path, (int) perms.toShort());
-
-    if (result != 0) {
-      LOG.warn(
-          "mkdirs: make directory " + abs_path + "Failing with result " + result);
-      if (-ceph.ENOTDIR == result) {
-        throw new IOException("Parent path is not a directory");
-      }
-      return false;
-    } else {
-      LOG.debug("mkdirs:exiting succesfully");
+    try {
+      ceph.mkdirs(path, (int) perms.toShort());
+    } catch (CephFileAlreadyExistsException e) {
       return true;
+    } catch (IOException e) {
+      return false;
     }
+
+    return true;
   }
 
   /**
@@ -364,7 +358,7 @@ public class CephFileSystem extends FileSystem {
 
       if (parent != null) { // if parent is root, we're done
         try {
-          ceph.ceph_mkdirs(parent, permission.toShort());
+          ceph.mkdirs(parent, permission.toShort());
         } catch (CephFileAlreadyExistsException e) {}
       }
       if (progress != null) {
