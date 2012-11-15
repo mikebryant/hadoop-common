@@ -86,7 +86,7 @@ public class CephInputStream extends FSInputStream {
   }
 
   private synchronized boolean fillBuffer() throws IOException {
-    bufValid = ceph.ceph_read(fileHandle, buffer, 0, buffer.length);
+    bufValid = ceph.read(fileHandle, buffer, buffer.length, -1);
     bufPos = 0;
     if (bufValid < 0) {
       int err = bufValid;

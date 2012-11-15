@@ -185,14 +185,12 @@ class CephTalker extends CephFS {
     return mount.lseek(fd, offset, whence);
   }
 
-  protected int ceph_write(int fh, byte[] buffer, int buffer_offset, int length) throws IOException {
-    assert buffer_offset == 0;
-    return (int)mount.write(fh, buffer, length, -1);
+  int write(int fd, byte[] buf, long size, long offset) throws IOException {
+    return (int)mount.write(fd, buf, size, offset);
   }
 
-  protected int ceph_read(int fh, byte[] buffer, int buffer_offset, int length) throws IOException {
-    assert buffer_offset == 0;
-    return (int)mount.read(fh, buffer, length, -1);
+  int read(int fd, byte[] buf, long size, long offset) throws IOException {
+    return (int)mount.read(fd, buf, size, offset);
   }
 
 }

@@ -151,7 +151,7 @@ public class CephOutputStream extends OutputStream {
       len -= write;
       off += write;
       if (bufUsed == buffer.length) {
-        result = ceph.ceph_write(fileHandle, buffer, 0, bufUsed);
+        result = ceph.write(fileHandle, buffer, bufUsed, -1);
         if (result < 0) {
           throw new IOException(
               "CephOutputStream.write: Buffered write of " + bufUsed
@@ -180,7 +180,7 @@ public class CephOutputStream extends OutputStream {
       if (bufUsed == 0) {
         return;
       }
-      int result = ceph.ceph_write(fileHandle, buffer, 0, bufUsed);
+      int result = ceph.write(fileHandle, buffer, bufUsed, -1);
 
       if (result < 0) {
         throw new IOException(

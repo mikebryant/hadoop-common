@@ -51,36 +51,12 @@ abstract class CephFS {
   abstract void rename(Path src, Path dst) throws IOException;
   abstract short getDefaultReplication();
   abstract short get_file_replication(Path path) throws IOException;
+  abstract int write(int fd, byte[] buf, long size, long offset) throws IOException;
+  abstract int read(int fd, byte[] buf, long size, long offset) throws IOException;
 
   /*
    * Create the specified directory and any required intermediate ones with the
    * given mode.
    */
   abstract protected int ceph_mkdirs(Path path, int mode) throws IOException;
-
-  /*
-   * Write the given buffer contents to the given filehandle.
-   * Inputs:
-   *  int fh: The filehandle to write to.
-   *  byte[] buffer: The buffer to write from
-   *  int buffer_offset: The position in the buffer to write from
-   *  int length: The number of (sequential) bytes to write.
-   * Returns: int, on success the number of bytes written, on failure
-   *  a negative error code.
-   */
-  abstract protected int ceph_write(int fh, byte[] buffer, int buffer_offset, int length) throws IOException;
-
-  /*
-   * Reads into the given byte array from the current position.
-   * Inputs:
-   *  int fh: the filehandle to read from
-   *  byte[] buffer: the byte array to read into
-   *  int buffer_offset: where in the buffer to start writing
-   *  int length: how much to read.
-   * There'd better be enough space in the buffer to write all
-   * the data from the given offset!
-   * Returns: the number of bytes read on success (as an int),
-   *  or an error code otherwise.	 */
-  abstract protected int ceph_read(int fh, byte[] buffer, int buffer_offset, int length) throws IOException;
-
 }
