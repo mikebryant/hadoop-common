@@ -109,15 +109,6 @@ class CephTalker extends CephFS {
     mount.lstat(pathString(path), stat);
   }
 
-  protected String ceph_getcwd() throws IOException {
-    return mount.getcwd();
-  }
-
-  protected boolean ceph_setcwd(String path) throws IOException {
-    mount.chdir(path);
-    return true;
-  }
-
   void rmdir(Path path) throws IOException {
     mount.rmdir(pathString(path));
   }

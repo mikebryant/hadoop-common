@@ -51,19 +51,6 @@ abstract class CephFS {
   abstract void rename(Path src, Path dst) throws IOException;
 
   /*
-   * Returns the current working directory (absolute) as a String
-   */
-  abstract protected String ceph_getcwd() throws IOException;
-
-  /*
-   * Changes the working directory.
-   * Inputs:
-   *  String path: The path (relative or absolute) to switch to
-   * Returns: true on success, false otherwise.
-   */
-  abstract protected boolean ceph_setcwd(String path) throws IOException;
-
-  /*
    * Get the block size for a given path.
    * Input:
    *  String path: The path (relative or absolute) you want
