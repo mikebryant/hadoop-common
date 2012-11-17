@@ -507,7 +507,9 @@ public class CephFileSystem extends FileSystem {
    */
   @Override
   public long getDefaultBlockSize() {
-    return getConf().getInt("fs.ceph.block.size", 1 << 26);
+    return getConf().getLong(
+        CephConfigKeys.CEPH_BLOCK_SIZE_KEY,
+        CephConfigKeys.CEPH_BLOCK_SIZE_DEFAULT);
   }
 
 }

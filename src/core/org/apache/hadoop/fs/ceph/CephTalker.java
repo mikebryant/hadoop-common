@@ -53,7 +53,9 @@ class CephTalker extends CephFS {
     /*
      * Load a configuration file if specified
      */
-    String configfile = conf.get("fs.ceph.conf.file", null);
+    String configfile = conf.get(
+        CephConfigKeys.CEPH_CONF_FILE_KEY,
+        CephConfigKeys.CEPH_CONF_FILE_DEFAULT);
     if (configfile != null) {
       mount.conf_read_file(configfile);
     }
@@ -61,7 +63,9 @@ class CephTalker extends CephFS {
     /*
      * Parse and set Ceph configuration options
      */
-    String configopts = conf.get("fs.ceph.conf.options", null);
+    String configopts = conf.get(
+        CephConfigKeys.CEPH_CONF_OPTS_KEY,
+        CephConfigKeys.CEPH_CONF_OPTS_DEFAULT);
     if (configopts != null) {
       String[] options = configopts.split(",");
       for (String option : options) {
@@ -82,7 +86,9 @@ class CephTalker extends CephFS {
     /*
      * Get default replication from configuration.
      */
-    defaultReplication = (short)conf.getInt("fs.ceph.replication", 3);
+    defaultReplication = (short)conf.getInt(
+        CephConfigKeys.CEPH_REPLICATION_KEY,
+        CephConfigKeys.CEPH_REPLICATION_DEFAULT);
 
     /* Passing root = null to mount() will default to "/" */
     String root = StringUtils.stripToNull(uri.getPath());
