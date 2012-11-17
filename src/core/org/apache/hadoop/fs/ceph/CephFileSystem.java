@@ -76,7 +76,7 @@ public class CephFileSystem extends FileSystem {
   private URI uri;
 
   private Path workingDir;
-  private CephFS ceph = null;
+  private CephFS ceph;
 
   /**
    * Create a new CephFileSystem.
