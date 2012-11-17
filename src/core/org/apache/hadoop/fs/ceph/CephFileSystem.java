@@ -85,6 +85,16 @@ public class CephFileSystem extends FileSystem {
   }
 
   /**
+   * Create an absolute path using the working directory.
+   */
+  private Path makeAbsolute(Path path) {
+    if (path.isAbsolute()) {
+      return path;
+    }
+    return new Path(workingDir, path);
+  }
+
+  /**
    * Lets you get the URI of this CephFileSystem.
    * @return the URI.
    */
@@ -498,19 +508,6 @@ public class CephFileSystem extends FileSystem {
   @Override
   public long getDefaultBlockSize() {
     return getConf().getInt("fs.ceph.block.size", 1 << 26);
-  }
-
-  /**
-   * Adds the working directory to path if path is not already
-   * an absolute path. The URI scheme is not removed here. It
-   * is removed only when users (e.g. ceph native calls) need
-   * the path-only portion.
-   */
-  private Path makeAbsolute(Path path) {
-    if (path.isAbsolute()) {
-      return path;
-    }
-    return new Path(workingDir, path);
   }
 
 }
