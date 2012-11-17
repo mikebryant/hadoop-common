@@ -85,18 +85,6 @@ public class CephFileSystem extends FileSystem {
   }
 
   /**
-   * Used for testing purposes, this constructor
-   * sets the given CephFS instead of defaulting to a
-   * CephTalker (with its assumed real Ceph instance to talk to).
-   *
-   * TODO: make package private
-   */
-  public CephFileSystem(CephFS ceph_fs) {
-    super();
-    ceph = ceph_fs;
-  }
-
-  /**
    * Lets you get the URI of this CephFileSystem.
    * @return the URI.
    */
