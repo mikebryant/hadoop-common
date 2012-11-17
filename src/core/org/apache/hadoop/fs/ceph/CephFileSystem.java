@@ -41,6 +41,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.net.DNS;
@@ -312,79 +313,45 @@ public class CephFileSystem extends FileSystem {
    * existing directory, or the path exists but overwrite is false, or there is a
    * failure in attempting to open for append with Ceph.
    */
-  public FSDataOutputStream create(Path path,
-      FsPermission permission,
-      boolean overwrite,
-      int bufferSize,
-      short replication,
-      long blockSize,
+  public FSDataOutputStream create(Path path, FsPermission permission,
+      boolean overwrite, int bufferSize, short replication, long blockSize,
       Progressable progress) throws IOException {
-    LOG.debug("create:enter with path " + path);
-    Path abs_path = makeAbsolute(path);
+
+    path = makeAbsolute(path);
+
+    boolean exists = exists(path);
 
     if (progress != null) {
       progress.progress();
     }
-    // We ignore replication since that's not configurable here, and
-    // progress reporting is quite limited.
-    // Required semantics: if the file exists, overwrite if 'overwrite' is set;
-    // otherwise, throw an exception
 
-    // Step 1: existence test
-    boolean exists = exists(abs_path);
+    int flags = CephMount.O_WRONLY | CephMount.O_CREAT;
 
     if (exists) {
-      if (getFileStatus(abs_path).isDir()) {
-        throw new IOException(
-            "create: Cannot overwrite existing directory \"" + path.toString()
-            + "\" with a file");
-      }
-      if (!overwrite) {
-        throw new IOException(
-            "createRaw: Cannot open existing file \"" + abs_path.toString()
-            + "\" for writing without overwrite flag");
-      }
+      if (overwrite)
+        flags |= CephMount.O_TRUNC;
+      else
+        throw new FileAlreadyExistsException();
+    } else {
+      Path parent = path.getParent();
+      if (parent != null)
+        if (!mkdirs(parent, permission))
+          throw new IOException("mkdirs failed for " + parent.toString());
     }
 
     if (progress != null) {
       progress.progress();
     }
 
-    // Step 2: create any nonexistent directories in the path
-    if (!exists) {
-      Path parent = abs_path.getParent();
-
-      if (parent != null) { // if parent is root, we're done
-        try {
-          ceph.mkdirs(parent, permission.toShort());
-        } catch (CephFileAlreadyExistsException e) {}
-      }
-      if (progress != null) {
-        progress.progress();
-      }
-    }
-
-    // Step 3: open the file
-    LOG.trace("calling ceph_open_for_overwrite from Java");
-    int flags = CephMount.O_WRONLY|CephMount.O_CREAT|CephMount.O_TRUNC;
-    int fh = ceph.open(abs_path, flags, (int)permission.toShort());
+    int fd = ceph.open(path, flags, (int)permission.toShort());
 
     if (progress != null) {
       progress.progress();
     }
-    LOG.trace("Returned from ceph_open_for_overwrite to Java with fh " + fh);
-    if (fh < 0) {
-      throw new IOException(
-          "create: Open for overwrite failed on path \"" + path.toString()
-          + "\"");
-    }
 
-    // Step 4: create the stream
-    OutputStream cephOStream = new CephOutputStream(getConf(), ceph, fh,
+    OutputStream ostream = new CephOutputStream(getConf(), ceph, fd,
         bufferSize);
-
-    LOG.debug("create:exit");
-    return new FSDataOutputStream(cephOStream, statistics);
+    return new FSDataOutputStream(ostream, statistics);
   }
 
   /**
