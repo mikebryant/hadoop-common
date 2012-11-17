@@ -52,25 +52,9 @@ import com.ceph.fs.CephStat;
 
 
 /**
- * <p>
- * A {@link FileSystem} backed by <a href="http://ceph.newdream.net">Ceph.</a>.
- * This will not start a Ceph instance; one must already be running.
- * </p>
- * Configuration of the CephFileSystem is handled via a few Hadoop
- * Configuration properties: <br>
- * fs.ceph.monAddr -- the ip address/port of the monitor to connect to. <br>
- * fs.ceph.libDir -- the directory that libcephfs and libhadoopceph are
- * located in. This assumes Hadoop is being run on a linux-style machine
- * with names like libcephfs.so.
- * fs.ceph.commandLine -- if you prefer you can fill in this property
- * just as you would when starting Ceph up from the command line. Specific
- * properties override any configuration specified here.
- * <p>
- * You can also enable debugging of the CephFileSystem and Ceph itself: <br>
- * fs.ceph.debug -- if 'true' will print out method enter/exit messages,
- * plus a little more.
- * fs.ceph.clientDebug/fs.ceph.messengerDebug -- will print out debugging
- * from the respective Ceph system of at least that importance.
+ * Known Issues:
+ *
+ *   1. Per-file replication and block size are ignored.
  */
 public class CephFileSystem extends FileSystem {
   private static final Log LOG = LogFactory.getLog(CephFileSystem.class);
