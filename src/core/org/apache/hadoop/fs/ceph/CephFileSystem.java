@@ -95,12 +95,7 @@ public class CephFileSystem extends FileSystem {
     return new Path(workingDir, path);
   }
 
-  /**
-   * Lets you get the URI of this CephFileSystem.
-   * @return the URI.
-   */
   public URI getUri() {
-    LOG.debug("getUri:exit with return " + uri);
     return uri;
   }
 
@@ -179,20 +174,10 @@ public class CephFileSystem extends FileSystem {
     return new FSDataOutputStream(ostream, statistics);
   }
 
-  /**
-   * Get the current working directory for the given file system
-   * @return the directory Path
-   */
   public Path getWorkingDirectory() {
     return workingDir;
   }
 
-  /**
-   * Set the current working directory for the given file system. All relative
-   * paths will be resolved relative to it.
-   *
-   * @param dir The directory to change to.
-   */
   @Override
   public void setWorkingDirectory(Path dir) {
     workingDir = makeAbsolute(dir);
@@ -468,10 +453,6 @@ public class CephFileSystem extends FileSystem {
     return ceph.getDefaultReplication();
   }
 
-  /**
-   * Get the default block size.
-   * @return the default block size, in bytes, as a long.
-   */
   @Override
   public long getDefaultBlockSize() {
     return getConf().getLong(
