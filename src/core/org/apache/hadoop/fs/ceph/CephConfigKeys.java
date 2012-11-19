@@ -34,4 +34,7 @@ public class CephConfigKeys extends CommonConfigurationKeys {
 
   public static final String CEPH_REPLICATION_KEY = "fs.ceph.replication";
   public static final short  CEPH_REPLICATION_DEFAULT = 3;
+
+  public static final String CEPH_ROOT_DIR_KEY = "fs.ceph.root.dir";
+  public static final String CEPH_ROOT_DIR_DEFAULT = "/";
 }

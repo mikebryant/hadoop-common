@@ -90,8 +90,14 @@ class CephTalker extends CephFS {
         CephConfigKeys.CEPH_REPLICATION_KEY,
         CephConfigKeys.CEPH_REPLICATION_DEFAULT);
 
-    /* Passing root = null to mount() will default to "/" */
-    String root = StringUtils.stripToNull(uri.getPath());
+    /*
+     * Use a different root?
+     */
+    String root = conf.get(
+        CephConfigKeys.CEPH_ROOT_DIR_KEY,
+        CephConfigKeys.CEPH_ROOT_DIR_DEFAULT);
+
+    /* Actually mount the file system */
     mount.mount(root);
 
     mount.chdir("/");
