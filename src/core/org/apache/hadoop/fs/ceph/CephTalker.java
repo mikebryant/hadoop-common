@@ -33,6 +33,7 @@ import org.apache.commons.lang.StringUtils;
 import com.ceph.fs.CephMount;
 import com.ceph.fs.CephStat;
 import com.ceph.fs.CephFileAlreadyExistsException;
+import com.ceph.fs.CephNotDirectoryException;
 
 class CephTalker extends CephFS {
 
@@ -124,7 +125,11 @@ class CephTalker extends CephFS {
   }
 
   void lstat(Path path, CephStat stat) throws IOException {
-    mount.lstat(pathString(path), stat);
+    try {
+      mount.lstat(pathString(path), stat);
+    } catch (CephNotDirectoryException e) {
+      throw new FileNotFoundException();
+    }
   }
 
   void rmdir(Path path) throws IOException {

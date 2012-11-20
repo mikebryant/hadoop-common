@@ -47,6 +47,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.net.DNS;
 
 import com.ceph.fs.CephFileAlreadyExistsException;
+import com.ceph.fs.CephNotDirectoryException;
 import com.ceph.fs.CephMount;
 import com.ceph.fs.CephStat;
 
@@ -179,15 +180,15 @@ public class CephFileSystem extends FileSystem {
   public boolean mkdirs(Path path, FsPermission perms) throws IOException {
     path = makeAbsolute(path);
 
+    boolean result = false;
     try {
       ceph.mkdirs(path, (int) perms.toShort());
+      result = true;
     } catch (CephFileAlreadyExistsException e) {
-      return true;
-    } catch (IOException e) {
-      return false;
+      result = true;
     }
 
-    return true;
+    return result;
   }
 
   /**
