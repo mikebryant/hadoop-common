@@ -13,7 +13,13 @@ public class TestCephFileSystem extends FileSystemContractBaseTest {
   protected void setUp() throws IOException {
     Configuration conf = new Configuration();
     URI uri = URI.create("ceph:///");
-    conf.set("fs.ceph.conf.file", "/home/nwatkins/projects/ceph/ceph/src/ceph.conf");
+    //pull the path to the conf file out of the environment
+    String cephConfFile = System.getProperty(CephConfigKeys.CEPH_CONF_FILE_KEY);
+
+    if( null != cephConfFile) { 
+      conf.set(CephConfigKeys.CEPH_CONF_FILE_KEY, cephConfFile);
+    }
+
     fs = new CephFileSystem();
     fs.initialize(uri, conf);
   }

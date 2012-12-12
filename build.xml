@@ -1076,7 +1076,7 @@
                      value="@{test.krb5.conf.filename}"/>
         <sysproperty key="hadoop.policy.file" value="hadoop-policy.xml" />
         <sysproperty key="java.library.path"
-                     value="${build.native}/lib:${lib.dir}/native/${build.platform}:${lib.file.path}:${snappy.lib}" />
+                     value="${build.native}/lib:${lib.dir}/native/${build.platform}:${lib.file.path}:${snappy.lib}:${extra.library.path}" />
         <sysproperty key="install.c++.examples"
                      value="${install.c++.examples}" />
         <sysproperty key="testjar"
