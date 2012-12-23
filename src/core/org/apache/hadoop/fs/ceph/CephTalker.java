@@ -85,6 +85,14 @@ class CephTalker extends CephFS {
     }
 
     /*
+     * Allow reads from replica objects?
+     */
+    boolean localizeReads = conf.getBoolean(
+        CephConfigKeys.CEPH_LOCALIZE_READS_KEY,
+        CephConfigKeys.CEPH_LOCALIZE_READS_DEFAULT);
+    mount.localize_reads(localizeReads);
+
+    /*
      * Get default replication from configuration.
      */
     defaultReplication = (short)conf.getInt(
