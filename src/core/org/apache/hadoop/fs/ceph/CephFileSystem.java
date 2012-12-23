@@ -147,8 +147,7 @@ public class CephFileSystem extends FileSystem {
       progress.progress();
     }
 
-    int fd = ceph.open(path,
-        CephMount.O_WRONLY|CephMount.O_CREAT|CephMount.O_APPEND, 0);
+    int fd = ceph.open(path, CephMount.O_WRONLY|CephMount.O_APPEND, 0);
 
     if (progress != null) {
       progress.progress();
