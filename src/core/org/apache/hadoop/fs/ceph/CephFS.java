@@ -34,6 +34,8 @@ abstract class CephFS {
 
   abstract void initialize(URI uri, Configuration conf) throws IOException;
   abstract int open(Path path, int flags, int mode) throws IOException;
+  abstract int open(Path path, int flags, int mode, int stripe_unit,
+      int stripe_count, int object_size, String data_pool) throws IOException;
   abstract void fstat(int fd, CephStat stat) throws IOException;
   abstract void lstat(Path path, CephStat stat) throws IOException;
   abstract void unlink(Path path) throws IOException;

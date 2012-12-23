@@ -23,8 +23,8 @@ import org.apache.hadoop.fs.CommonConfigurationKeys;
  * Configuration key constants used by CephFileSystem.
  */
 public class CephConfigKeys extends CommonConfigurationKeys {
-  public static final String CEPH_BLOCK_SIZE_KEY = "ceph.block.size";
-  public static final long   CEPH_BLOCK_SIZE_DEFAULT = 64*1024*1024;
+  public static final String CEPH_OBJECT_SIZE_KEY = "ceph.object.size";
+  public static final long   CEPH_OBJECT_SIZE_DEFAULT = 64*1024*1024;
 
   public static final String CEPH_CONF_FILE_KEY = "ceph.conf.file";
   public static final String CEPH_CONF_FILE_DEFAULT = null;

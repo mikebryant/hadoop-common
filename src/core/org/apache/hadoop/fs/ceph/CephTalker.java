@@ -120,6 +120,24 @@ class CephTalker extends CephFS {
     return fd;
   }
 
+  /*
+   * Same as open(path, flags, mode) alternative, but takes custom striping
+   * parameters that are used when a file is being created.
+   */
+  int open(Path path, int flags, int mode, int stripe_unit, int stripe_count,
+      int object_size, String data_pool) throws IOException {
+    int fd = mount.open(pathString(path), flags, mode, stripe_unit,
+        stripe_count, object_size, data_pool);
+    CephStat stat = new CephStat();
+    fstat(fd, stat);
+    if (stat.isDir()) {
+      mount.close(fd);
+      throw new FileNotFoundException();
+    }
+    return fd;
+  }
+
+
   void fstat(int fd, CephStat stat) throws IOException {
     mount.fstat(fd, stat);
   }

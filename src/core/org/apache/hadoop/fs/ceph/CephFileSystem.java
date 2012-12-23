@@ -312,7 +312,11 @@ public class CephFileSystem extends FileSystem {
       progress.progress();
     }
 
-    int fd = ceph.open(path, flags, (int)permission.toShort());
+    /* Sanity check. Ceph interface uses int for striping strategy */
+    assert(blockSize <= Integer.MAX_VALUE);
+
+    int fd = ceph.open(path, flags, (int)permission.toShort(), (int)blockSize,
+        1, (int)blockSize, "unused");
 
     if (progress != null) {
       progress.progress();
@@ -440,8 +444,8 @@ public class CephFileSystem extends FileSystem {
   @Override
   public long getDefaultBlockSize() {
     return getConf().getLong(
-        CephConfigKeys.CEPH_BLOCK_SIZE_KEY,
-        CephConfigKeys.CEPH_BLOCK_SIZE_DEFAULT);
+        CephConfigKeys.CEPH_OBJECT_SIZE_KEY,
+        CephConfigKeys.CEPH_OBJECT_SIZE_DEFAULT);
   }
 
 }
