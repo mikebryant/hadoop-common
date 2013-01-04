@@ -316,7 +316,7 @@ public class CephFileSystem extends FileSystem {
     assert(blockSize <= Integer.MAX_VALUE);
 
     int fd = ceph.open(path, flags, (int)permission.toShort(), (int)blockSize,
-        1, (int)blockSize, "unused");
+        1, (int)blockSize, null);
 
     if (progress != null) {
       progress.progress();
