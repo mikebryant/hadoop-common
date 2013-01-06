@@ -63,6 +63,7 @@ public class CephFileSystem extends FileSystem {
 
   private Path workingDir;
   private CephFS ceph;
+  private static final int CEPH_STRIPE_COUNT = 1;
 
   /**
    * Create a new CephFileSystem.
@@ -338,8 +339,11 @@ public class CephFileSystem extends FileSystem {
       blockSize = newBlockSize;
     }
 
+    /*
+     * The default file layout is block size == stripe_unit, stripe_count = 1;
+     */
     int fd = ceph.open(path, flags, (int)permission.toShort(), (int)blockSize,
-        1, (int)blockSize, null);
+        CEPH_STRIPE_COUNT, (int)blockSize, null);
 
     if (progress != null) {
       progress.progress();
