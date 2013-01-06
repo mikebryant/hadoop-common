@@ -29,6 +29,8 @@ import java.net.InetAddress;
 import java.util.EnumSet;
 import java.lang.Math;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -64,6 +66,7 @@ public class CephFileSystem extends FileSystem {
   private Path workingDir;
   private CephFS ceph;
   private static final int CEPH_STRIPE_COUNT = 1;
+  private TreeMap<Integer, String> datapools = null;
 
   /**
    * Create a new CephFileSystem.
@@ -265,6 +268,80 @@ public class CephFileSystem extends FileSystem {
   }
 
   /**
+   * Get data pools from configuration.
+   */
+  private String[] getConfiguredDataPools() {
+    String pool_list = getConf().get(
+        CephConfigKeys.CEPH_DATA_POOLS_KEY,
+        CephConfigKeys.CEPH_DATA_POOLS_DEFAULT);
+
+    if (pool_list != null)
+      return pool_list.split(",");
+
+    return new String[0];
+  }
+
+  /**
+   * Lookup pool size by name.
+   */
+  private int getPoolReplication(String pool_name) throws IOException {
+    int pool_id = ceph.get_pool_id(pool_name);
+    return ceph.get_pool_replication(pool_id);
+  }
+
+  /**
+   * Select a data pool given the requested replication factor.
+   */
+  private String selectDataPool(Path path, int repl_wanted) throws IOException {
+    /* map pool size -> pool name */
+    TreeMap<Integer, String> pools = new TreeMap<Integer, String>();
+
+    /*
+     * Start with a mapping for the default pool. An error here would indicate
+     * something bad, so we throw any exceptions. For configured pools we
+     * ignore some errors.
+     */
+    int fd = ceph.__open(new Path("/"), CephMount.O_RDONLY, 0);
+    String pool_name = ceph.get_file_pool_name(fd);
+    int replication = getPoolReplication(pool_name);
+    pools.put(new Integer(replication), pool_name);
+
+    /*
+     * Insert extra data pools from configuration. Errors are logged (most
+     * likely a non-existant pool), and a configured pool will override the
+     * default pool.
+     */
+    String[] conf_pools = getConfiguredDataPools();
+    for (String name : conf_pools) {
+      try {
+        replication = getPoolReplication(name);
+        pools.put(new Integer(replication), name);
+      } catch (IOException e) {
+        LOG.warn("Error looking up replication of pool: " + name + ", " + e);
+      }
+    }
+
+    /* Choose smallest entry >= target, or largest in map. */
+    Map.Entry<Integer, String> entry = pools.ceilingEntry(new Integer(repl_wanted));
+    if (entry == null)
+      entry = pools.lastEntry();
+
+    /* should always contain default pool */
+    assert(entry != null);
+
+    replication = entry.getKey().intValue();
+    pool_name = entry.getValue();
+
+    /* log non-exact match cases */
+    if (replication != repl_wanted) {
+      LOG.info("selectDataPool path=" + path + " pool:repl=" +
+          pool_name + ":" + replication + " wanted=" + repl_wanted);
+    }
+
+    return pool_name;
+  }
+
+  /**
    * Create a new file and open an FSDataOutputStream that's connected to it.
    * @param path The file to create.
    * @param permission The permissions to apply to the file.
@@ -343,10 +420,14 @@ public class CephFileSystem extends FileSystem {
     }
 
     /*
-     * The default file layout is block size == stripe_unit, stripe_count = 1;
+     * The default Ceph data pool is selected to store files unless a specific
+     * data pool is provided when a file is created. Since a pool has a fixed
+     * replication factor, in order to achieve a requested replication factor,
+     * we must select an appropriate data pool to place the file into.
      */
+    String datapool = selectDataPool(path, replication);
     int fd = ceph.open(path, flags, (int)permission.toShort(), (int)blockSize,
-        CEPH_STRIPE_COUNT, (int)blockSize, null);
+        CEPH_STRIPE_COUNT, (int)blockSize, datapool);
 
     if (progress != null) {
       progress.progress();
