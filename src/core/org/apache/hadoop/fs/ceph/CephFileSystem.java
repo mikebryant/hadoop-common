@@ -315,6 +315,29 @@ public class CephFileSystem extends FileSystem {
     /* Sanity check. Ceph interface uses int for striping strategy */
     assert(blockSize <= Integer.MAX_VALUE);
 
+    /*
+     * If blockSize <= 0 then we complain. We need to explicitly check for the
+     * < 0 case (as opposed to allowing Ceph to raise an exception) because
+     * the ceph_open_layout interface accepts -1 to request Ceph-specific
+     * defaults.
+     */
+    if (blockSize <= 0)
+      throw new IllegalArgumentException("Invalid block size: " + blockSize);
+
+    /*
+     * Ceph may impose alignment restrictions on file layout. In this case we
+     * check if the requested block size is aligned to the granularity of a
+     * stripe unit used in the file system. When the block size is not aligned
+     * we automatically adjust to the next largest multiple of stripe unit
+     * granularity.
+     */
+    int su = ceph.get_stripe_unit_granularity();
+    if (blockSize % su != 0) {
+      long newBlockSize = blockSize - (blockSize % su) + su;
+      LOG.debug("fix alignment: blksize " + blockSize + " new blksize " + newBlockSize);
+      blockSize = newBlockSize;
+    }
+
     int fd = ceph.open(path, flags, (int)permission.toShort(), (int)blockSize,
         1, (int)blockSize, null);
 

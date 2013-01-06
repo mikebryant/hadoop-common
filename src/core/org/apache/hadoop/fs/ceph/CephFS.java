@@ -52,4 +52,5 @@ abstract class CephFS {
   abstract int write(int fd, byte[] buf, long size, long offset) throws IOException;
   abstract int read(int fd, byte[] buf, long size, long offset) throws IOException;
   abstract void mkdirs(Path path, int mode) throws IOException;
+  abstract int get_stripe_unit_granularity();
 }

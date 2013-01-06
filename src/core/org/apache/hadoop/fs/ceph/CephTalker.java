@@ -215,6 +215,10 @@ class CephTalker extends CephFS {
     return (short)replication;
   }
 
+  int get_stripe_unit_granularity() {
+    return mount.get_stripe_unit_granularity();
+  }
+
   void setattr(Path path, CephStat stat, int mask) throws IOException {
     mount.setattr(pathString(path), stat, mask);
   }
