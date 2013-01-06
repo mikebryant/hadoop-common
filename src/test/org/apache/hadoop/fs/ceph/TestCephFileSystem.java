@@ -16,7 +16,7 @@ public class TestCephFileSystem extends FileSystemContractBaseTest {
     //pull the path to the conf file out of the environment
     String cephConfFile = System.getProperty(CephConfigKeys.CEPH_CONF_FILE_KEY);
 
-    if( null != cephConfFile) { 
+    if (cephConfFile != null) {
       conf.set(CephConfigKeys.CEPH_CONF_FILE_KEY, cephConfFile);
     }
 
