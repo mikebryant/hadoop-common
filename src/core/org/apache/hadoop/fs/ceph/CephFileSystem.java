@@ -314,7 +314,10 @@ public class CephFileSystem extends FileSystem {
     }
 
     /* Sanity check. Ceph interface uses int for striping strategy */
-    assert(blockSize <= Integer.MAX_VALUE);
+    if (blockSize > Integer.MAX_VALUE) {
+      blockSize = Integer.MAX_VALUE;
+      LOG.info("blockSize too large. Rounding down to " + blockSize);
+    }
 
     /*
      * If blockSize <= 0 then we complain. We need to explicitly check for the
