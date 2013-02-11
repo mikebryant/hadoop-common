@@ -12,13 +12,11 @@ public class TestCephFileSystem extends FileSystemContractBaseTest {
   @Override
   protected void setUp() throws IOException {
     Configuration conf = new Configuration();
-    URI uri = URI.create("ceph:///");
-    //pull the path to the conf file out of the environment
-    String cephConfFile = System.getProperty(CephConfigKeys.CEPH_CONF_FILE_KEY);
 
-    if (cephConfFile != null) {
-      conf.set(CephConfigKeys.CEPH_CONF_FILE_KEY, cephConfFile);
-    }
+    String conf_file = System.getProperty("hadoop.conf.file");
+    conf.addResource(new Path(conf_file));
+
+    URI uri = URI.create("ceph:///");
 
     fs = new CephFileSystem();
     fs.initialize(uri, conf);
