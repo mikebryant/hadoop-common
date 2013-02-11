@@ -269,8 +269,10 @@ public class CephFileSystem extends FileSystem {
 
   /**
    * Get data pools from configuration.
+   *
+   * Package-private: used by unit tests
    */
-  private String[] getConfiguredDataPools() {
+  String[] getConfiguredDataPools() {
     String pool_list = getConf().get(
         CephConfigKeys.CEPH_DATA_POOLS_KEY,
         CephConfigKeys.CEPH_DATA_POOLS_DEFAULT);
@@ -283,8 +285,10 @@ public class CephFileSystem extends FileSystem {
 
   /**
    * Lookup pool size by name.
+   *
+   * Package-private: used by unit tests
    */
-  private int getPoolReplication(String pool_name) throws IOException {
+  int getPoolReplication(String pool_name) throws IOException {
     int pool_id = ceph.get_pool_id(pool_name);
     return ceph.get_pool_replication(pool_id);
   }

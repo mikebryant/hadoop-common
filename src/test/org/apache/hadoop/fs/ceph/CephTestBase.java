@@ -22,4 +22,13 @@ public abstract class CephTestBase extends FileSystemContractBaseTest {
     fs.initialize(uri, conf);
   }
 
+  protected String[] getConfiguredDataPools() throws Exception {
+    CephFileSystem cephfs = (CephFileSystem)fs;
+    return cephfs.getConfiguredDataPools();
+  }
+
+  protected int getPoolReplication(String name) throws Exception {
+    CephFileSystem cephfs = (CephFileSystem)fs;
+    return cephfs.getPoolReplication(name);
+  }
 }
