@@ -349,8 +349,8 @@ public class CephFileSystem extends FileSystem {
 	 * this name; otherwise don't.
    * @param bufferSize Ceph does internal buffering, but you can buffer
    *   in the Java code too if you like.
-   * @param replication Ignored by Ceph. This can be
-   * configured via Ceph configuration.
+   * @param replication Replication factor. See documentation on the
+   *   "ceph.data.pools" configuration option.
    * @param blockSize Ignored by Ceph. You can set client-wide block sizes
    * via the fs.ceph.blockSize param if you like.
    * @param progress A Progressable to report back to.
