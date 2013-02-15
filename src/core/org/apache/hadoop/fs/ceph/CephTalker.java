@@ -34,6 +34,7 @@ import com.ceph.fs.CephMount;
 import com.ceph.fs.CephStat;
 import com.ceph.fs.CephFileAlreadyExistsException;
 import com.ceph.fs.CephNotDirectoryException;
+import com.ceph.fs.CephPoolException;
 
 class CephTalker extends CephFS {
 
@@ -113,12 +114,19 @@ class CephTalker extends CephFS {
   }
 
   /*
+   * Open a file. Allows directories to be opened.
+   */
+  int __open(Path path, int flags, int mode) throws IOException {
+    return mount.open(pathString(path), flags, mode);
+  }
+
+  /*
    * Open a file. Ceph will not complain if we open a directory, but this
    * isn't something that Hadoop expects and we should throw an exception in
    * this case.
    */
   int open(Path path, int flags, int mode) throws IOException {
-    int fd = mount.open(pathString(path), flags, mode);
+    int fd = __open(path, flags, mode);
     CephStat stat = new CephStat();
     fstat(fd, stat);
     if (stat.isDir()) {
@@ -235,4 +243,23 @@ class CephTalker extends CephFS {
     return (int)mount.read(fd, buf, size, offset);
   }
 
+  String get_file_pool_name(int fd) {
+    return mount.get_file_pool_name(fd);
+  }
+
+  int get_pool_id(String pool_name) throws IOException {
+    try {
+      return mount.get_pool_id(pool_name);
+    } catch (CephPoolException e) {
+      throw new IOException();
+    }
+  }
+
+  int get_pool_replication(int poolid) throws IOException {
+    try {
+      return mount.get_pool_replication(poolid);
+    } catch (CephPoolException e) {
+      throw new IOException();
+    }
+  }
 }

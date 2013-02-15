@@ -29,10 +29,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.Configuration;
 
 import com.ceph.fs.CephStat;
+import com.ceph.fs.CephPoolException;
 
 abstract class CephFS {
 
   abstract void initialize(URI uri, Configuration conf) throws IOException;
+  abstract int __open(Path path, int flags, int mode) throws IOException;
   abstract int open(Path path, int flags, int mode) throws IOException;
   abstract int open(Path path, int flags, int mode, int stripe_unit,
       int stripe_count, int object_size, String data_pool) throws IOException;
@@ -53,4 +55,7 @@ abstract class CephFS {
   abstract int read(int fd, byte[] buf, long size, long offset) throws IOException;
   abstract void mkdirs(Path path, int mode) throws IOException;
   abstract int get_stripe_unit_granularity();
+  abstract String get_file_pool_name(int fd);
+  abstract int get_pool_id(String pool_name) throws IOException;;
+  abstract int get_pool_replication(int poolid) throws IOException;
 }
