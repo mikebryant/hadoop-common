@@ -712,6 +712,10 @@
   <target name="compile" depends="compile-core, compile-contrib, compile-ant-tasks, compile-tools" description="Compile core, contrib">
   </target>
 
+  <target name="cephfs" depends="compile-core">
+      <jar destfile="build/hadoop-cephfs.jar" basedir="build/classes" includes="**/ceph/**"/>
+  </target>
+
   <target name="compile-examples" 
           depends="compile-core,compile-tools,compile-c++-examples">
     <javac 
