@@ -716,6 +716,10 @@
       <jar destfile="build/hadoop-cephfs.jar" basedir="build/classes" includes="**/ceph/**"/>
   </target>
 
+  <target name="cephfs-test" depends="compile-core-test">
+      <jar destfile="build/hadoop-cephfs-test.jar" basedir="build/test/classes" includes="**/ceph/**"/>
+  </target>
+
   <target name="compile-examples" 
           depends="compile-core,compile-tools,compile-c++-examples">
     <javac 
