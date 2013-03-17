@@ -50,7 +50,14 @@ class CephTalker extends CephFS {
   }
 
   void initialize(URI uri, Configuration conf) throws IOException {
-    mount = new CephMount("admin");
+
+    /*
+     * Create mount with auth user id
+     */
+    String user_id = conf.get(
+        CephConfigKeys.CEPH_AUTH_ID_KEY,
+        CephConfigKeys.CEPH_AUTH_ID_DEFAULT);
+    mount = new CephMount(user_id);
 
     /*
      * Load a configuration file if specified
@@ -61,6 +68,34 @@ class CephTalker extends CephFS {
     if (configfile != null) {
       mount.conf_read_file(configfile);
     }
+
+    /* Set auth keyfile */
+    String keyfile = conf.get(
+        CephConfigKeys.CEPH_AUTH_KEYFILE_KEY,
+        CephConfigKeys.CEPH_AUTH_KEYFILE_DEFAULT);
+    if (keyfile != null)
+      mount.conf_set("keyfile", keyfile);
+
+    /* Set auth keyring */
+    String keyring = conf.get(
+        CephConfigKeys.CEPH_AUTH_KEYRING_KEY,
+        CephConfigKeys.CEPH_AUTH_KEYRING_DEFAULT);
+    if (keyring != null)
+      mount.conf_set("keyring", keyring);
+
+    /* Set monitor */
+    String mon_addr = null;
+    String mon_host = uri.getHost();
+    int mon_port = uri.getPort();
+    if (mon_host != null && mon_port != -1)
+      mon_addr = mon_host + ":" + mon_port;
+    else {
+      mon_addr = conf.get(
+          CephConfigKeys.CEPH_MON_ADDR_KEY,
+          CephConfigKeys.CEPH_MON_ADDR_DEFAULT);
+    }
+    if (mon_addr != null)
+        mount.conf_set("mon_host", mon_addr);
 
     /*
      * Parse and set Ceph configuration options
@@ -95,9 +130,12 @@ class CephTalker extends CephFS {
     /*
      * Use a different root?
      */
-    String root = conf.get(
-        CephConfigKeys.CEPH_ROOT_DIR_KEY,
-        CephConfigKeys.CEPH_ROOT_DIR_DEFAULT);
+    String root = uri.getPath();
+    if (root == null || root.length() == 0) {
+      root = conf.get(
+          CephConfigKeys.CEPH_ROOT_DIR_KEY,
+          CephConfigKeys.CEPH_ROOT_DIR_DEFAULT);
+    }
 
     /* Actually mount the file system */
     mount.mount(root);
