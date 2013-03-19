@@ -36,11 +36,23 @@ public class CephConfigKeys extends CommonConfigurationKeys {
   public static final short  CEPH_REPLICATION_DEFAULT = 3;
 
   public static final String CEPH_ROOT_DIR_KEY = "ceph.root.dir";
-  public static final String CEPH_ROOT_DIR_DEFAULT = "/";
+  public static final String CEPH_ROOT_DIR_DEFAULT = null;
 
   public static final String  CEPH_LOCALIZE_READS_KEY = "ceph.localize.reads";
   public static final boolean CEPH_LOCALIZE_READS_DEFAULT = true;
 
   public static final String CEPH_DATA_POOLS_KEY = "ceph.data.pools";
   public static final String CEPH_DATA_POOLS_DEFAULT = null;
+
+  public static final String CEPH_AUTH_ID_KEY = "ceph.auth.id";
+  public static final String CEPH_AUTH_ID_DEFAULT = null;
+
+  public static final String CEPH_AUTH_KEYFILE_KEY = "ceph.auth.keyfile";
+  public static final String CEPH_AUTH_KEYFILE_DEFAULT = null;
+
+  public static final String CEPH_AUTH_KEYRING_KEY = "ceph.auth.keyring";
+  public static final String CEPH_AUTH_KEYRING_DEFAULT = null;
+
+  public static final String CEPH_MON_ADDR_KEY = "ceph.mon.address";
+  public static final String CEPH_MON_ADDR_DEFAULT = null;
 }
