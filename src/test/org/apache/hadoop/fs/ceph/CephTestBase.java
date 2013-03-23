@@ -16,7 +16,7 @@ public abstract class CephTestBase extends FileSystemContractBaseTest {
     String conf_file = System.getProperty("hadoop.conf.file");
     conf.addResource(new Path(conf_file));
 
-    URI uri = URI.create("ceph:///");
+    URI uri = FileSystem.getDefaultUri(conf);
 
     fs = new CephFileSystem();
     fs.initialize(uri, conf);
