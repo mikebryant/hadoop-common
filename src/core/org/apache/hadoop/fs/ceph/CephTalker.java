@@ -130,12 +130,9 @@ class CephTalker extends CephFS {
     /*
      * Use a different root?
      */
-    String root = uri.getPath();
-    if (root == null || root.length() == 0) {
-      root = conf.get(
+    String root = conf.get(
           CephConfigKeys.CEPH_ROOT_DIR_KEY,
           CephConfigKeys.CEPH_ROOT_DIR_DEFAULT);
-    }
 
     /* Actually mount the file system */
     mount.mount(root);
