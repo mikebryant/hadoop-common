@@ -307,6 +307,7 @@ public class CephFileSystem extends FileSystem {
      */
     int fd = ceph.__open(new Path("/"), CephMount.O_RDONLY, 0);
     String pool_name = ceph.get_file_pool_name(fd);
+    ceph.close(fd);
     int replication = getPoolReplication(pool_name);
     pools.put(new Integer(replication), pool_name);
 
