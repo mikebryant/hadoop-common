@@ -468,9 +468,12 @@ public class CephFileSystem extends FileSystem {
 
     Path parent = path.getParent();
 
-    if (parent != null)
-      if (!exists(parent))
-        throw new IOException("parent " + parent.toString() + " does not exist.");
+    if (parent != null) {
+      CephStat stat = new CephStat();
+      ceph.lstat(parent, stat); // handles FileNotFoundException case
+      if (stat.isFile())
+        throw new FileAlreadyExistsException(parent.toString());
+    }
 
     return this.create(path, permission, overwrite,
         bufferSize, replication, blockSize, progress);
